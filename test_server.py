@@ -50,7 +50,7 @@ def test_provider_contract(monkeypatch):
                      'headline': 'Свободное время', 'copy': 'Запишитесь на маникюр, уточните время у мастера.',
                      'steps': ['Проверить расписание', 'Утвердить материалы'],
                      'caution': 'Ничего не публиковать без подтверждения'}
-            return {'choices': [{'message': {'content': json.dumps({'offers':[offer]*3}, ensure_ascii=False)}}]}
+            return {'choices': [{'message': {'content': json.dumps({'offers':[offer, {**offer, 'title':'Личный контакт','copy':'Предложим подписчикам получить консультацию перед записью.'}, {**offer,'title':'Видео с мастером','copy':'Покажем процесс подготовки и предложим уточнить наличие окон.'}]}, ensure_ascii=False)}}]}
     class MockClient:
         def __init__(self, **kwargs): pass
         async def __aenter__(self): return self
@@ -66,7 +66,7 @@ def test_provider_contract(monkeypatch):
     assert seen['headers']['Authorization']=='Bearer fake_key'
     assert seen['json']['model']=='ai-sage/GigaChat3-10B-A1.8B'
     assert seen['json']['response_format']=={'type':'json_object'}
-    assert seen['json']['max_completion_tokens']==2500
+    assert seen['json']['max_tokens']==3300
 
 def test_yandex_remains_optional(monkeypatch):
     monkeypatch.setenv('AI_PROVIDER', 'yandex')
@@ -76,3 +76,26 @@ def test_yandex_remains_optional(monkeypatch):
     assert name == 'Yandex AI Studio'
     assert config['url'] == 'https://ai.api.cloud.yandex.net/v1/chat/completions'
     assert config['model'] == 'gpt://test_folder/yandexgpt-5.1'
+
+def test_repeated_ideas_are_rejected(monkeypatch):
+    monkeypatch.setenv('AI_PROVIDER', 'cloudru')
+    monkeypatch.setenv('CLOUDRU_API_KEY', 'fake_key')
+    monkeypatch.setenv('RG_DEMO_ACCESS_TOKEN', TOKEN)
+    server.attempts.clear()
+    class Response:
+        def raise_for_status(self): pass
+        def json(self):
+            row = {'title':'Одинаковая идея','reason':'Уведомить аудиторию','channel':'Telegram',
+                   'description':'Анонс','headline':'Новая запись',
+                   'copy':'Уточните время записи в сообщениях нашего салона.',
+                   'steps':['Проверить расписание','Утвердить публикацию'],
+                   'caution':'Не обещать неподтверждённые часы'}
+            return {'choices':[{'message':{'content':json.dumps({'offers':[row]*3},ensure_ascii=False)}}]}
+    class Client:
+        def __init__(self,**kw): pass
+        async def __aenter__(self): return self
+        async def __aexit__(self,*args): pass
+        async def post(self,url,**kw): return Response()
+    monkeypatch.setattr(server.httpx,'AsyncClient',Client)
+    r = client.post('/api/generate',headers=headers(),json=valid_request())
+    assert r.status_code == 502
