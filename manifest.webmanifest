@@ -1,13 +1,13 @@
 {
   "id": "./",
-  "name": "Revenue Guard — ИИ-коммерческий директор",
+  "name": "Revenue Guard — Идеи и креативы",
   "short_name": "Revenue Guard",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
   "lang": "ru",
-  "theme_color": "#fafaf8",
-  "background_color": "#fafaf8",
+  "theme_color": "#fffafc",
+  "background_color": "#fffafc",
   "icons": [
     {
       "src": "./icon-192.png",
