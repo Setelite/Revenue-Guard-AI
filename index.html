@@ -291,6 +291,77 @@ body[data-industry="b2b"] .inspo-2{background:linear-gradient(135deg,#bcd6d3,#78
 .business-art-1 .art-symbol{transform:rotate(12deg)}
 .business-art-2 .art-object{border-radius:10px 35px 12px 35px;transform:rotate(-6deg)}
 .business-art-2 .art-symbol{transform:rotate(-6deg)}
+</style>
+<style>
+/* Revenue Guard / Recover revenue: mobile-first prioritization */
+.losses-page{max-width:900px;margin:0 auto;padding:5px 0 32px}
+.losses-eyebrow{display:flex;align-items:center;gap:7px;color:#c35483;font-size:12px;letter-spacing:.14em;font-weight:800;margin-bottom:10px}
+.losses-eyebrow svg{width:18px;height:18px}
+.losses-title{font-size:clamp(43px,6vw,71px);line-height:1.04;letter-spacing:-.075em;margin:0 0 16px}
+.losses-title em{font-weight:420;font-family:Georgia,serif;font-style:italic;color:#c86a91}
+.losses-summary{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin:27px 0 13px}
+.loss-stat{padding:24px 22px;background:#fff;border:1px solid #f4e9ed;border-radius:25px;min-width:0;box-shadow:0 7px 25px #cd8b9e12}
+.loss-stat span,.potential-box span{font-size:14px;color:#8a7d85;font-weight:620}
+.loss-stat strong{display:block;font-size:55px;letter-spacing:-.08em;line-height:1.2;margin:9px 0}
+.loss-stat small{font-size:12px;color:#9a8c96}
+.loss-hot{background:linear-gradient(140deg,#fff4ed,#ffe8ee);border-color:#f6d9dd}
+.loss-hot strong{color:#d8576f}
+.potential-box{display:flex;align-items:center;justify-content:space-between;gap:18px;background:#fff;border:1px solid #f2e8f0;border-radius:25px;padding:22px;margin-bottom:16px}
+.potential-box strong{display:block;font-size:clamp(30px,4vw,40px);letter-spacing:-.05em;color:#3e303d;font-weight:760}
+.potential-note{max-width:250px;font-size:12px;line-height:1.5;color:#9b8c98}
+.risk-settings{display:flex;gap:12px;align-items:center;justify-content:space-between;padding:5px 1px 14px;margin:0 0 10px}
+.risk-settings label{color:#8a7e89;font-size:13px;line-height:1.35}
+.risk-settings select{width:auto;min-width:115px;background:#fff;border:1px solid #e9dce7;border-radius:13px;padding:11px 12px;font-size:14px;font-weight:670}
+.loss-add{padding:25px;background:linear-gradient(145deg,#fff,#fff9fc);border:1px solid #f1e4ed;border-radius:28px;box-shadow:0 12px 35px #d7a2ba18;margin:26px 0}
+.loss-section-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:21px}
+.loss-section-head h2{font-size:25px;letter-spacing:-.055em;margin:0;line-height:1.15}
+.loss-section-head span{font-size:12px;color:#9b8f9a;text-align:right}
+.loss-field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.loss-add .field{margin-bottom:15px}
+.loss-add label{font-size:13px}
+.loss-add input,.loss-add select{border-radius:15px;font-size:16px;background:#fff}
+.loss-add .primary{margin-top:5px;min-height:61px;border-radius:18px}
+.loss-list{margin-top:31px}
+.loss-lead{border:1px solid #f1e5ed;background:#fff;padding:20px;border-radius:23px;box-shadow:0 8px 35px #b889a20b;margin-bottom:11px}
+.loss-lead.is-urgent{background:linear-gradient(135deg,#fff9f7,#fff);border-color:#f4b9c3;box-shadow:inset 4px 0 0 #ed7483}
+.loss-lead-top,.loss-lead-line{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.loss-source{font-size:15px;font-weight:730}
+.loss-status{font-size:11px;line-height:1.4;font-weight:770;border-radius:25px;padding:6px 9px;color:#748274;background:#edf4ef}
+.loss-status.urgent{background:#ffe6e6;color:#c75063}
+.loss-lead-line{margin:15px 0 8px}
+.loss-lead-line strong{font-size:24px;letter-spacing:-.045em}
+.loss-lead-line>span{font-size:12px;color:#b19da9;text-align:right}
+.loss-lead-sub{font-size:12px;color:#a28f9b;line-height:1.45}
+.loss-buttons{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:19px}
+.loss-buttons button{font-size:12px;font-weight:730;border:1px solid #eadde7;border-radius:13px;background:#fffafd;padding:12px 5px;color:#6d5e69;min-height:45px}
+.loss-buttons button:first-child{background:#e9f2ed;border-color:#d4e5db;color:#446f55}
+.loss-buttons button:nth-child(2){background:#f8e6f0;border-color:#f0d9e7;color:#ae4179}
+.loss-buttons button:hover{filter:brightness(.98)}
+.loss-closed{margin-top:13px;font-size:12px;color:#819086}
+.loss-empty{background:#fff;border:1px dashed #e8d4df;border-radius:24px;min-height:165px;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;text-align:center;padding:25px;color:#9b8994}
+.loss-empty svg{width:29px;height:29px;color:#80b18c}
+.loss-empty strong{font-size:19px;color:#504451}
+.loss-empty span{max-width:310px;font-size:13px}
+.loss-disclaimer,.loss-legacy{font-size:12px;line-height:1.65;color:#998b97;margin:24px 5px}
+.loss-legacy{background:#faf1f7;padding:13px 15px;border-radius:15px;margin:10px 0}
+.risk-home-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;background:linear-gradient(100deg,#ffe8ed,#fff0f5);color:#a14a6a;border:1px solid #f9d3dc;border-radius:18px;padding:13px 17px;margin:14px 0 22px;font-size:14px;font-weight:700;text-align:left;width:100%}
+.risk-home-banner svg{width:20px;height:20px}
+@media(max-width:720px){
+ .bottom{gap:0;padding:7px 5px calc(6px + env(safe-area-inset-bottom));}
+ .bottom button{flex:1;min-width:0!important;padding:8px 1px;min-height:57px;font-size:10px;letter-spacing:-.02em;gap:4px;}
+ .bottom button svg{width:20px;height:20px}
+ .losses-title{font-size:47px}
+ .loss-stat{padding:19px 18px;border-radius:21px}
+ .loss-stat strong{font-size:49px}
+ .potential-box{padding:21px 18px;flex-direction:column;align-items:flex-start;gap:5px}
+ .potential-note{max-width:none}
+ .loss-add{padding:18px;border-radius:22px}
+ .loss-field-row{grid-template-columns:1fr 1fr;gap:9px}
+ .loss-field-row input,.loss-field-row select{padding:15px 9px;font-size:14px}
+ .loss-section-head h2{font-size:22px}
+ .loss-lead{padding:17px}
+}
+@media(max-width:360px){.bottom button{font-size:9px}.loss-buttons button{font-size:11px;padding:10px 2px}.loss-stat strong{font-size:43px}}
 </style></head>
 <body>
 <div class="layout">
@@ -430,6 +501,7 @@ function home(){
    <span class="hero-copy"><span class="hero-label">ВАША КРЕАТИВНАЯ СТУДИЯ</span><strong>Продажи, клиенты<br>и идеи для роста</strong><span class="hero-circle">→</span></span>
    <span class="hero-phone" aria-hidden="true"><span class="hero-photo"><span class="hero-progress"></span><span class="hero-bottle"></span><span class="hero-pump"></span><span class="hero-towel"></span><span class="hero-love">♡</span></span></span>
   </button>
+  ${state.leads.filter(isRiskLead).length?`<button type="button" class="risk-home-banner" data-go="losses">${svg('alert')}<span>${state.leads.filter(isRiskLead).length} обращений требуют проверки</span><span>→</span></button>`:''}
   <div class="quick-grid" aria-label="Быстрый старт">
    <button type="button" class="quick-action quick-peach" data-quick="Хочу увеличить продажи основного товара или услуги без скидок. Предложи три разных способа."><span class="quick-icon">${svg('calendar')}</span><span>Увеличить<br>продажи</span></button>
    <button type="button" class="quick-action quick-lilac" data-quick="Хочу получать больше обращений через наши каналы. Предложи три разные механики."><span class="quick-icon">${svg('spark')}</span><span>Привлечь<br>клиентов</span></button>
@@ -594,7 +666,7 @@ function wire(){document.querySelectorAll('[data-go]').forEach(b=>b.addEventList
  $('assetText').oninput=()=>{getPack(c)[assetMode]=$('assetText').value;if(assetMode==='post'){c.copy=$('assetText').value;copy.value=c.copy;}save()};
  $('copyAsset').onclick=()=>copyText($('assetText').value);
 document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{c.posterTheme=b.dataset.theme;save();document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b));$('storyPreview').className='preview theme-'+c.posterTheme});const sync=()=>{c.title=title.value;c.copy=copy.value;getPack(c).post=c.copy;save();$('storyTitle').textContent=c.title};title.oninput=sync;copy.oninput=sync;$('copyOffer').onclick=()=>copyText(`${title.value}\n\n${copy.value}`);$('downloadStory').onclick=()=>storyPNG(c);$('approveOffer').onclick=()=>{if(!c.title.trim()||!c.copy.trim()){toast('Добавьте заголовок и текст');return}c.status='approved';c.approvedAt=now();save();route('launch',c.id)}}if(page==='launch'){const c=byId();
- if($('addLead'))$('addLead').onclick=()=>{state.leads.unshift({id:'lead'+Date.now(),campaignId:c.id,date:now()});save();toast('Обращение учтено');render()};
+ if($('addLead'))$('addLead').onclick=()=>{state.leads.unshift({id:'lead'+Date.now()+Math.random().toString(36).slice(2,6),tracked:true,source:'other',campaignId:c.id,estimate:safeMoney(c.businessSnapshot?.price||state.business.price),status:'new',createdAt:now(),lastTouchAt:now()});save();toast('Обращение учтено');render()};
  if($('markPublished'))$('markPublished').onclick=()=>{c.status='published';c.publishedAt=now();save();render()};if($('addPayment'))$('addPayment').onclick=()=>{const n=Number($('paidAmount').value);if(!Number.isFinite(n)||n<=0||n>100000000){toast('Укажите корректную сумму оплаты');return}state.payments.unshift({id:'p'+Date.now(),campaignId:c.id,title:c.title,amount:Math.round(n*100)/100,date:now()});save();toast('Оплата добавлена');route('result')}}if(page==='losses'){
  const form=$('leadForm');
  $('riskHours').onchange=e=>{state.leadSlaHours=Number(e.target.value);save();render()};
