@@ -52,6 +52,11 @@ const set=(x,v)=>{const e=d.querySelector(x);assert.ok(e,'Missing '+x);e.value=v
  assert.equal(d.querySelector('#openCount').textContent,'0');
  assert.equal(d.querySelector('#riskValue').textContent,'0 ₽');
  assert.equal(JSON.parse(app.window.localStorage.getItem('rg-clean-v2')).payments.length,0,'Closing as won does not invent received payment');
+ click('.loss-reopen');
+ assert.equal(d.querySelector('#openCount').textContent,'1','Accidentally closed leads can be reopened');
+ assert.equal(d.querySelector('#riskCount').textContent,'0','Reopen logs a fresh action timestamp');
+ click('[data-lead-action="lost"]');
+ assert.equal(d.querySelector('#openCount').textContent,'0');
  // Input validation: future timestamps cannot be logged.
  const before=JSON.parse(app.window.localStorage.getItem('rg-clean-v2')).leads.length;
  const tomorrow=new Date(Date.now()+24*3600000);
