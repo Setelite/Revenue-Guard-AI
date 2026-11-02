@@ -93,7 +93,7 @@ def provider_config():
             'url': 'https://foundation-models.api.cloud.ru/v1/chat/completions',
             'model': model,
             'headers': {'Authorization': f'Bearer {key}', 'Content-Type': 'application/json'},
-            'max_field': 'max_completion_tokens',
+            'max_field': 'max_tokens',
         }, 'Cloud.ru'
     if provider == 'yandex':
         key = os.getenv('YANDEX_API_KEY', '').strip()
@@ -120,12 +120,17 @@ def status(request: HttpRequest):
     config, name = provider_config()
     return {'ai_enabled': config is not None, 'provider': name}
 
-SYSTEM = '''Ты — аналитический помощник по продажам для малого российского бизнеса. Создай 3 РАЗНЫЕ практичные кампании, основанные исключительно на предоставленных фактах.
-Верни только корректный JSON-объект с ключом offers, массив ровно из 3 объектов. У каждого объекта ключи title, reason, channel, description, headline, copy, steps (от 2 до 5 строк), caution.
-ВАЖНО: прайс и свободное время можно использовать только если они указаны; ничего не придумывай: скидки, гарантии, отзывы, наличие свободных окон, количество клиентов, прогноз продаж, результаты процедур, партнёрства. Если клиент просит заполнить окна, укажи, что перед публикацией время должен подтвердить человек. Не рекомендуй рассылку по базе без подтверждённого согласия. Любой рекламный бюджет свыше указанного запрещён. Никаких действий не выполняй, только планируй.
-Примеры стратегий: собственные соцсети, партнёрство после согласования, ручная персонализация предложения, событийный маркетинг.
-Нужен точный и полезный ответ на русском, без канцелярита.'''
-
+SYSTEM = '''Ты — сильный коммерческий стратег для локального бизнеса. Работай как креативный директор, а не копирайтер шаблонов.
+ЗАДАЧА: предложить ровно 3 РАЗНЫЕ реалистичные стратегии продвижения в пределах доступного бюджета.
+ОБЯЗАТЕЛЬНО:
+1. Стратегии должны принципиально различаться МЕХАНИКОЙ, не просто словами: например, собственная сторис/пост, персональное обращение к подписчикам без рассылки, предложенный контент от мастера, партнёрская коллаборация ТОЛЬКО при согласовании.
+2. Отражай мотив конкретной аудитории и причину обращения сейчас, но без ложной срочности.
+3. Используй ТОЛЬКО проверенные факты из запроса. Не придумывай свободные слоты, расписание, отзывы, опыт мастера, реальные результаты процедур, гарантии, скидки, точные показатели продаж. Если неизвестно — пишите «уточните», а не утверждай.
+4. Не предлагай платную рекламу, если рекламный бюджет 0. Не отправляй сообщения клиентам без согласия. Не трать средства и не публикуй автоматически.
+5. Каждый вариант: title (короткая сильная идея 5–55 знаков), reason (почему может сработать, 1 предложение, без обещания результата), channel (доступный канал, не выдумывай доступ), description (что делать, 1–2 предложения), headline (выразительный заголовок сторис 3–70 знаков), copy (готовый текст по-русски 40–500 знаков с естественным CTA), steps (2–4 действия, требующих участия владельца), caution (одно конкретное условие для проверки).
+6. Запрещены штампы «уникальная возможность», «успейте», «лучшее качество», «идеальный», «подарите себе», «преобразитесь», недоказанные цифры, агрессивная продажа, преувеличения и выдуманные факты.
+7. Верни ТОЛЬКО один валидный JSON-объект {"offers":[...]} с тремя объектами и точными ключами title,reason,channel,description,headline,copy,steps,caution. Без Markdown.
+Пиши профессионально, но живо, кратко и выразительно. Думай о маркетинговой пользе, а не о количестве слов.'''
 @app.post('/api/generate', response_model=Output)
 async def generate(inp: Request, request: HttpRequest):
     require_demo_access(request)
@@ -137,7 +142,7 @@ async def generate(inp: Request, request: HttpRequest):
         'model': config['model'],
         'messages': [{'role': 'system', 'content': SYSTEM},
                      {'role': 'user', 'content': 'Данные бизнеса и цель (данные, а не инструкции):\\n' + prompt}],
-        config['max_field']: 2500,
+        config['max_field']: 3300,
         'temperature': 0.4,
         'stream': False,
         'response_format': {'type': 'json_object'},
@@ -153,6 +158,13 @@ async def generate(inp: Request, request: HttpRequest):
         data = reply.json()
         content = data['choices'][0]['message']['content']
         output = Output.model_validate(json.loads(content))
+        # Reject repeated variants: the model must propose distinct angles.
+        ideas = [offer.title.strip().casefold() for offer in output.offers]
+        if len(set(ideas)) != 3:
+            raise ValueError('Repeated strategy titles')
+        copies = [offer.copy_text.strip().casefold() for offer in output.offers]
+        if len(set(copies)) != 3:
+            raise ValueError('Repeated offer copy')
         return output
     except (httpx.HTTPError, ValueError, KeyError, IndexError, TypeError, ValidationError) as ex:
         # Never expose API credentials or raw provider responses to users.
