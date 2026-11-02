@@ -5,12 +5,15 @@ from __future__ import annotations
 
 import json
 import os
+import hmac
+import time
+from collections import deque
 from pathlib import Path
 
 import httpx
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request as HttpRequest
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field, ValidationError
 
 try:
@@ -22,7 +25,30 @@ ROOT = Path(__file__).parent
 if load_dotenv:
     load_dotenv(ROOT / '.env')
 
-app = FastAPI(title='Revenue Guard AI MVP 1.0', docs_url=None, redoc_url=None)
+app = FastAPI(title='Revenue Guard AI — AI pilot', docs_url=None, redoc_url=None)
+origins = [x.strip() for x in os.getenv('RG_ALLOWED_ORIGINS', 'https://setelite.github.io,http://localhost:8000,http://127.0.0.1:8000').split(',') if x.strip()]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_methods=['GET', 'POST'],
+    allow_headers=['Content-Type', 'X-Demo-Token'],
+)
+attempts = deque()
+
+def require_demo_access(req: HttpRequest) -> None:
+    secret = os.getenv('RG_DEMO_ACCESS_TOKEN', '')
+    if len(secret) < 24:
+        raise HTTPException(status_code=503, detail='На сервере не настроен доступ к демоверсии')
+    supplied = req.headers.get('X-Demo-Token', '')
+    if not hmac.compare_digest(secret, supplied):
+        raise HTTPException(status_code=401, detail='Неверный код доступа')
+    current_time = time.monotonic()
+    while attempts and attempts[0] < current_time - 60:
+        attempts.popleft()
+    if len(attempts) >= 12:
+        raise HTTPException(status_code=429, detail='Слишком много запросов; попробуйте позже')
+    attempts.append(current_time)
+
 
 class Service(BaseModel):
     name: str = Field(min_length=1, max_length=100)
@@ -55,7 +81,8 @@ class Output(BaseModel):
     offers: list[Offer] = Field(min_length=3, max_length=3)
 
 @app.get('/api/status')
-def status():
+def status(request: HttpRequest):
+    require_demo_access(request)
     return {'ai_enabled': bool(os.getenv('YANDEX_API_KEY') and os.getenv('YANDEX_FOLDER_ID')),
             'provider': 'Yandex AI Studio' if os.getenv('YANDEX_API_KEY') and os.getenv('YANDEX_FOLDER_ID') else 'offline'}
 
@@ -66,12 +93,13 @@ SYSTEM = '''Ты — аналитический помощник по прода
 Нужен точный и полезный ответ на русском, без канцелярита.'''
 
 @app.post('/api/generate', response_model=Output)
-async def generate(inp: Request):
+async def generate(inp: Request, request: HttpRequest):
+    require_demo_access(request)
     key = os.getenv('YANDEX_API_KEY')
     folder = os.getenv('YANDEX_FOLDER_ID')
     if not key or not folder:
         raise HTTPException(status_code=503, detail='ИИ-провайдер не настроен; используйте локальное демо.')
-    model = os.getenv('YANDEX_MODEL', 'yandexgpt/latest').strip()
+    model = os.getenv('YANDEX_MODEL', 'yandexgpt-5.1').strip()
     uri = model if model.startswith('gpt://') else f'gpt://{folder}/{model}'
     prompt = json.dumps(inp.model_dump(), ensure_ascii=False)
     body = {'model': uri, 'messages': [{'role': 'system', 'content': SYSTEM},
@@ -98,6 +126,13 @@ async def generate(inp: Request):
 
 @app.get('/')
 def index():
-    return FileResponse(ROOT / 'static' / 'index.html')
+    return FileResponse(ROOT / 'index.html')
 
-app.mount('/', StaticFiles(directory=ROOT / 'static'), name='static')
+@app.get('/{asset}')
+def public_asset(asset: str):
+    # Never expose .env, Python sources, tests or other private files.
+    allowed = {'manifest.webmanifest', 'sw.js', 'icon.svg', 'apple-touch-icon.png', 'icon-192.png'}
+    if asset not in allowed or not (ROOT / asset).is_file():
+        raise HTTPException(status_code=404, detail='Не найдено')
+    return FileResponse(ROOT / asset)
+
