@@ -11,7 +11,7 @@ def headers():
 
 def valid_request():
     return {'goal': 'Нужно заполнить свободные окна завтра',
-            'business': {'name': 'Салон', 'city': 'Екатеринбург', 'voice': 'Дружелюбно',
+            'business': {'name': 'Магазин света', 'city': 'Екатеринбург', 'industry': 'Магазин и товары', 'audience': 'Владельцы квартир', 'advantage': 'В каталоге есть настольные лампы', 'voice': 'Дружелюбно',
                          'channels': 'Telegram', 'budget': 0,
                          'services': [{'name': 'Маникюр', 'price': 2500, 'duration': 90}]}}
 
@@ -67,6 +67,8 @@ def test_provider_contract(monkeypatch):
     assert seen['json']['model']=='ai-sage/GigaChat3-10B-A1.8B'
     assert seen['json']['response_format']=={'type':'json_object'}
     assert seen['json']['max_tokens']==3300
+    assert 'Магазин и товары' in seen['json']['messages'][1]['content']
+    assert 'Владельцы квартир' in seen['json']['messages'][1]['content']
 
 def test_yandex_remains_optional(monkeypatch):
     monkeypatch.setenv('AI_PROVIDER', 'yandex')
