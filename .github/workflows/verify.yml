@@ -23,6 +23,8 @@ jobs:
         run: npm install --no-save --no-package-lock jsdom@26
       - name: Test mobile app interaction flow
         run: node tests/ui.test.cjs
+      - name: Test lost-revenue risk workflow
+        run: node tests/losses.test.cjs
       - name: Check frontend JavaScript syntax
         run: |
           python - <<'PY'
