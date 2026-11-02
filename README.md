@@ -39,3 +39,14 @@ API: https://foundation-models.api.cloud.ru/v1/chat/completions
 Нельзя публиковать действующие API-ключи в GitHub. Серверный код рассчитан на закрытый пилот с демонстрационными данными и общим кодом доступа, не на публичный SaaS. Проверка статуса подтверждает наличие конфигурации, но не реальное соединение с поставщиком. Промышленный запуск требует отдельных учётных записей, лимитов и защиты клиентских данных.
 
 Тестирование: `python -m pip install -r requirements.txt pytest && python -m pytest -q test_server.py`.
+
+## Визуальные материалы
+
+Главная страница использует открытые демонстрационные фотографии с Unsplash. Это иллюстрации интерфейса, а не фотографии клиентов или выполненных работ:
+
+- [Alexandra Tran — cosmetics flat lay](https://unsplash.com/photos/a-table-topped-with-lots-of-different-types-of-cosmetics-vOJDvdBYYzQ)
+- [Ozkan Guner — makeup artist](https://unsplash.com/photos/a-woman-in-a-white-shirt-is-smiling-and-holding-makeup-brushes-EGZ7CTBSmF8)
+- [Vitaly Gariev — studio makeup](https://unsplash.com/photos/makeup-artist-applying-makeup-to-a-model-in-studio-f9qZXRNtXGc)
+- [Sonia Roselli — skincare](https://unsplash.com/photos/white-and-pink-labeled-pump-bottle-4ib07-bBqIc)
+
+Используются фотографии, обозначенные на их страницах как *Free to use under the Unsplash License*. Фото требуют загрузки из интернета; без сети страница остаётся читаемой на цветных фонах.
