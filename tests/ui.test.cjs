@@ -22,7 +22,14 @@ const click = (sel) => {
 const tick = () => new Promise(r=>setTimeout(r,10));
 
 (async()=>{
-  assert.match(d.querySelector('h1').textContent,/Ваша следующая идея/);
+  assert.match(d.querySelector('h1').textContent,/Что будем/);
+  assert.equal(d.querySelectorAll('.quick-action').length,4,'Four quick actions');
+  assert.equal(d.querySelectorAll('.inspo-card').length,3,'Three visual ideas');
+  assert.equal(d.querySelectorAll('#bottomnav [data-route]').length,4,'Four bottom navigation items');
+  assert.ok(d.querySelector('#settingsOpen'),'Business settings accessible');
+  click('.quick-action');
+  assert.ok(d.querySelector('#taskText'),'Quick action opens composer');
+  assert.match(d.querySelector('#taskText').value,/свободные часы/);
   const input=d.querySelector('#taskText');
   assert.ok(input);
   input.value='Нужно заполнить свободные окна в салоне завтра, без скидок.';
@@ -52,6 +59,12 @@ const tick = () => new Promise(r=>setTimeout(r,10));
   click('#addPayment');
   await tick();
   assert.match(d.querySelector('#view').textContent,/4\s?500/,'Recorded payment is visible');
+  click('#bottomnav [data-route="home"]');
+  await tick();
+  assert.equal(d.querySelectorAll('.inspo-card').length,3,'Ideas remain available after payment');
+  click('#settingsOpen');
+  await tick();
+  assert.ok(d.querySelector('#bizForm'),'Settings accessible via header');
   assert.ok(localStorage.getItem('rg-clean-v2'),'Local data should persist');
   console.log('PASS: home → 3 offers → story themes → approval → manual publication → payment');
   app.window.close();
