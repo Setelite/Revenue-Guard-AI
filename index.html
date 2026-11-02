@@ -274,9 +274,15 @@ const icon={calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="
 const svg=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true">${icon[name]||icon.spark}</svg>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>Number(n||0).toLocaleString('ru-RU')+' ₽';
-const seed={business:{name:'Студия красоты',service:'Окрашивание волос',price:4500,channel:'Telegram и VK',budget:0},campaigns:[],payments:[]};
+const seed={business:{name:'Мой бизнес',industry:'other',service:'Товар или услуга',price:0,channel:'Собственные соцсети',budget:0,audience:'',advantage:''},campaigns:[],payments:[],leads:[]};
+const industries={beauty:['Красота и здоровье'],retail:['Магазин и товары'],food:['Кафе и еда'],services:['Услуги'],education:['Обучение'],b2b:['B2B и опт'],other:['Другое']};
+const industryOptions=()=>Object.entries(industries).map(([id,v])=>`<option value="${id}" ${state.business.industry===id?'selected':''}>${v[0]}</option>`).join('');
 let state;
-try{let v=JSON.parse(localStorage.getItem('rg-clean-v2'));state=v?.business&&Array.isArray(v.campaigns)&&Array.isArray(v.payments)?v:structuredClone(seed)}catch(e){state=JSON.parse(JSON.stringify(seed))}
+try{let v=JSON.parse(localStorage.getItem('rg-clean-v2'));state=v?.business&&Array.isArray(v.campaigns)&&Array.isArray(v.payments)?v:JSON.parse(JSON.stringify(seed))}catch(e){state=JSON.parse(JSON.stringify(seed))}
+if(!state.business.industry)state.business.industry=state.business.name==='Студия красоты'?'beauty':'other';
+state.business.audience=state.business.audience||'';
+state.business.advantage=state.business.advantage||'';
+if(!Array.isArray(state.leads))state.leads=[];
 
 let page='home',active=null,voice=null,aiBusy=false,aiVerified=false,composerOpen=false,composerDraft='';
 let aiEndpoint=localStorage.getItem('rg-ai-endpoint')||'';
@@ -326,7 +332,7 @@ async function addTask(){
   let offers,source='demo';
   if(aiEndpoint){
    const b=state.business;
-   const data={goal:text,business:{name:b.name,city:b.city||'Екатеринбург',voice:'Спокойно и понятно',channels:b.channel||'Собственные каналы',budget:Number(b.budget)||0,services:[{name:b.service,price:Number(b.price)||0,duration:0}]}};
+   const data={goal:text,business:{name:b.name,city:b.city||'Екатеринбург',industry:industries[b.industry]?.[0]||'Другое',audience:b.audience||'',advantage:b.advantage||'',voice:'Спокойно и понятно',channels:b.channel||'Собственные каналы',budget:Number(b.budget)||0,services:[{name:b.service,price:Number(b.price)||0,duration:0}]}};
    const output=await aiRequest('api/generate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)});
    if(!Array.isArray(output.offers)||output.offers.length!==3)throw Error('ИИ вернул неверный формат');
    offers=output.offers.map(o=>({title:o.title,headline:o.headline,subtitle:o.reason||o.description||'',copy:o.copy||'',channel:o.channel,steps:o.steps,caution:o.caution}));
@@ -340,14 +346,13 @@ async function addTask(){
 }
 window.addTask=addTask;
 function buildOffers(task){
- const b=state.business, service=b.service.trim()||'услуга салона';
- const name=b.name.trim()||'салон';const s=task.toLowerCase();
- const slots=/окн|свобод|завтра|расписан|мастер/.test(s);
- const goal=slots?'Уточнить наличие записи':/нов|запуск|презент/.test(s)?'Рассказать о новой услуге':'Начать разговор с клиентом';
+ const b=state.business,item=(b.service||'товар или услугу').trim(),brand=(b.name||'наш бизнес').trim();
+ const channel=b.channel||'Собственные каналы';
+ const audience=(b.audience||'').trim(),advantage=(b.advantage||'').trim();
  return [
-  {title:'Честный анонс',headline:slots?'Есть время для себя?':goal,subtitle:'Собственный канал · прямое действие',channel:b.channel||'Собственный канал',steps:['Проверить наличие времени','Согласовать текст','Опубликовать'],caution:'Перед публикацией уточнить реальные свободные часы.',copy:`В «${name}» можно записаться на ${service.toLowerCase()}. Напишите нам, и мы подскажем, какое время доступно и что входит в услугу.`},
-  {title:'Один вопрос аудитории',headline:'Есть вопрос к мастеру?',subtitle:'Вовлечение · через вопросы и ответы',channel:b.channel||'Собственный канал',steps:['Выбрать частый вопрос об услуге','Подготовить ответ специалиста','Опубликовать'],caution:'Используйте только проверенные рекомендации специалиста.',copy:`Давно присматриваетесь к ${service.toLowerCase()}, но остались вопросы? Напишите их нам. Специалист «${name}» расскажет об услуге, а администратор уточнит варианты записи.`},
-  {title:'За кадром профессии',headline:'Как всё устроено',subtitle:'Доверие · показать процесс без обещаний',channel:b.channel||'Собственный канал',steps:['Снять короткое видео с согласия мастера','Проверить факты и кадры','Добавить текст и опубликовать'],caution:'Не показывайте клиентов и их данные без согласия.',copy:`Что важно знать перед ${service.toLowerCase()}? Предлагаем заглянуть в рабочий процесс «${name}». Если интересно, напишите нам — расскажем об услуге и условиях записи.`}
+ {title:'Прямое предложение',headline:'Есть идея для вас',subtitle:'Продажи · понятный следующий шаг',channel,steps:['Проверить наличие и цену','Утвердить текст','Опубликовать в своём канале'],caution:'Перед публикацией проверьте цены, наличие и условия.',copy:`В «${brand}» можно узнать подробнее про ${item.toLowerCase()}.${advantage?' '+advantage+'.':''} Напишите нам — расскажем о деталях и условиях.`},
+ {title:'Диалог с покупателями',headline:'Есть вопрос?',subtitle:'Вовлечение · ответ на вопрос',channel,steps:['Выбрать реальный вопрос','Подготовить точный ответ','Опубликовать'],caution:'Не публикуйте неподтверждённые свойства и обещания.',copy:`Есть вопросы про ${item.toLowerCase()}? Напишите «${brand}» — объясним детали и условия. Ответим без лишних обещаний.`},
+ {title:'Показать продукт',headline:'Посмотрите ближе',subtitle:'Доверие · показать реальный процесс',channel,steps:['Снять реальный товар или процесс','Проверить факты и разрешения','Согласовать и опубликовать'],caution:'Не публикуйте чужие фотографии или персональные данные без разрешения.',copy:`Покажем, как выглядит ${item.toLowerCase()} в «${brand}». Хотите подробностей? Напишите нам, уточним характеристики и условия.`}
  ];
 }
 function addShort(text){$('taskText').value=text;$('taskText').focus();}
@@ -361,11 +366,11 @@ function ideaArt(i){
 function ideaPreviewCards(){
  const current=state.campaigns[0];
  const offers=current?.offers?.length===3?current.offers:[
-  {title:'Честный анонс',subtitle:'Приглашение без скидок'},
-  {title:'Вопрос мастеру',subtitle:'Контент для диалога'},
-  {title:'За кадром',subtitle:'Покажите работу изнутри'}
+  {title:'Готовый оффер',subtitle:'Простая идея для продаж'},
+  {title:'Вопрос аудитории',subtitle:'Начните диалог'},
+  {title:'Обзор продукта',subtitle:'Покажите товар или процесс'}
  ];
- const formats=['Сторис','Идея поста','Закулисье'];
+ const formats=['Оффер','Вопрос','Обзор'];
  return offers.slice(0,3).map((o,i)=>`<button type="button" class="inspo-card inspo-${i}" data-preview="${i}" aria-label="${esc(o.title)} — ${current?'открыть предложение':'начать задачу'}"><span class="inspo-art">${ideaArt(i)}</span><span class="inspo-shade"></span><span class="inspo-top"><span class="inspo-format">${formats[i]}</span><span class="inspo-index">0${i+1}</span></span><span class="inspo-copy"><strong>${esc(o.title)}</strong><small>${esc(o.subtitle||'Перейти к идее')}</small></span><span class="inspo-arrow">↗</span></button>`).join('');
 }
 function showComposer(text=''){
@@ -375,20 +380,20 @@ function showComposer(text=''){
 }
 function home(){
  const recent=state.campaigns[0];
- const heading=recent?.source==='ai'?'3 идеи от ИИ':recent?'Ваши 3 идеи':'Идеи для вдохновения';
+ const heading=recent?.source==='ai'?'3 идеи от ИИ':recent?'Ваши 3 идеи':'Идеи для бизнеса';
  return `<div class="social-home">
-  <div class="social-greeting">Привет! <span aria-hidden="true">✳</span></div>
-  <h1 class="social-title">Что будем<br>продвигать <span>сегодня?</span></h1>
+  <div class="social-greeting">Ваш помощник по росту <span aria-hidden="true">✳</span></div><button type="button" class="industry-pill" data-go="business">Сфера: ${esc(industries[state.business.industry]?.[0]||'Другое')} ↗</button>
+  <h1 class="social-title">Что будем<br><span>улучшать сегодня?</span></h1>
   <button class="hero-cta" type="button" data-compose aria-label="Сформировать новую идею">
    <span class="hero-glimmer" aria-hidden="true">✳</span>
-   <span class="hero-copy"><span class="hero-label">ВАША КРЕАТИВНАЯ СТУДИЯ</span><strong>Новая идея<br>для сторис и продаж</strong><span class="hero-circle">→</span></span>
+   <span class="hero-copy"><span class="hero-label">ВАША КРЕАТИВНАЯ СТУДИЯ</span><strong>Продажи, клиенты<br>и идеи для роста</strong><span class="hero-circle">→</span></span>
    <span class="hero-phone" aria-hidden="true"><span class="hero-photo"><span class="hero-progress"></span><span class="hero-bottle"></span><span class="hero-pump"></span><span class="hero-towel"></span><span class="hero-love">♡</span></span></span>
   </button>
   <div class="quick-grid" aria-label="Быстрый старт">
-   <button type="button" class="quick-action quick-peach" data-quick="Хочу заполнить свободные часы у мастера без скидок. Предложи три разных варианта продвижения."><span class="quick-icon">${svg('calendar')}</span><span>Заполнить<br>окна</span></button>
-   <button type="button" class="quick-action quick-lilac" data-quick="Нужно рассказать о новой услуге. Придумай три способа привлечь внимание без неподтверждённых обещаний."><span class="quick-icon">${svg('spark')}</span><span>Новая<br>услуга</span></button>
-   <button type="button" class="quick-action quick-rose" data-quick="Хочу вернуть внимание постоянных клиентов без навязчивых рассылок и скидок."><span class="quick-icon">${svg('users')}</span><span>Вернуть<br>клиентов</span></button>
-   <button type="button" class="quick-action quick-cream" data-quick="Придумай интересный оффер для нашей основной услуги без скидок и выдуманных преимуществ."><span class="quick-icon">${svg('tag')}</span><span>Придумать<br>оффер</span></button>
+   <button type="button" class="quick-action quick-peach" data-quick="Хочу увеличить продажи основного товара или услуги без скидок. Предложи три разных способа."><span class="quick-icon">${svg('calendar')}</span><span>Увеличить<br>продажи</span></button>
+   <button type="button" class="quick-action quick-lilac" data-quick="Хочу получать больше обращений через наши каналы. Предложи три разные механики."><span class="quick-icon">${svg('spark')}</span><span>Привлечь<br>клиентов</span></button>
+   <button type="button" class="quick-action quick-rose" data-quick="Хочу увеличить повторные покупки без массовых сообщений и скидок."><span class="quick-icon">${svg('users')}</span><span>Повторные<br>продажи</span></button>
+   <button type="button" class="quick-action quick-cream" data-quick="Предложи три идеи контента для моего товара или услуги: сторис, пост и короткое видео."><span class="quick-icon">${svg('tag')}</span><span>Создать<br>контент</span></button>
   </div>
   <section class="inspo-section" aria-label="Вдохновение">
    <div class="inspo-head"><h2>${heading} <span aria-hidden="true">✦</span></h2><button class="inspo-all" type="button" data-go="tasks">${recent?'Все идеи':'Мои идеи'} →</button></div>
@@ -396,7 +401,7 @@ function home(){
    <div class="inspo-status">${recent?(recent.source==='ai'?'Предложения созданы ИИ. Проверьте условия перед публикацией.':'Предложения созданы локально по шаблонам.'):'Это примеры визуального оформления, не генерация ИИ. Создайте задачу для своего бизнеса.'}</div>
   </section>
   <button id="createIdea" type="button" class="social-main-cta"><span aria-hidden="true">✧</span> Создать идею <span class="cta-arrow">→</span></button>
-  ${composerOpen?`<section id="composer" class="composer-panel"><div class="composer-head"><h2>Расскажите о задаче</h2><button type="button" class="composer-close" id="closeComposer" aria-label="Закрыть поле задачи">×</button></div><p>Один запрос — три варианта действий.</p><div class="voice-input"><textarea id="taskText" aria-label="Коммерческая задача" maxlength="600" placeholder="Например: завтра у мастера свободные окна. Хочу найти клиентов без скидок.">${esc(composerDraft)}</textarea><button id="voiceButton" class="round" type="button" title="Продиктовать задачу" aria-label="Продиктовать задачу">${svg('mic')}</button></div><button type="button" class="primary wide" id="createButton">Получить 3 идеи ${svg('right')}</button><div class="hint" id="voiceStatus">Можно написать или продиктовать задачу.</div></section>`:''}
+  ${composerOpen?`<section id="composer" class="composer-panel"><div class="composer-head"><h2>Расскажите о задаче</h2><button type="button" class="composer-close" id="closeComposer" aria-label="Закрыть поле задачи">×</button></div><p>Один запрос — три варианта действий.</p><div class="voice-input"><textarea id="taskText" aria-label="Коммерческая задача" maxlength="600" placeholder="Например: хочу продать больше товаров без скидок.">${esc(composerDraft)}</textarea><button id="voiceButton" class="round" type="button" title="Продиктовать задачу" aria-label="Продиктовать задачу">${svg('mic')}</button></div><button type="button" class="primary wide" id="createButton">Получить 3 идеи ${svg('right')}</button><div class="hint" id="voiceStatus">Можно написать или продиктовать задачу.</div></section>`:''}
   ${state.campaigns.length?`<div class="social-recent"><h3>Продолжить работу</h3>${campaignRow(state.campaigns[0])}</div>`:''}
   <div class="social-footnote">${aiEndpoint?(aiVerified?'Сервер настроен. Реальную генерацию проверяйте созданием задачи.':'Сервер указан — проверьте подключение в настройках.'):'Демо-режим без оплаты: идеи создаются по шаблонам. Настоящий ИИ подключается в настройках.'}</div>
  </div>`;
@@ -415,7 +420,7 @@ function wire(){document.querySelectorAll('[data-go]').forEach(b=>b.addEventList
  document.querySelectorAll('[data-preview]').forEach(b=>b.onclick=()=>{
   const c=state.campaigns[0],idx=Number(b.dataset.preview);
   if(c){c.selected=idx;c.title=c.offers[idx]?.headline||c.offers[idx]?.title||c.title;c.copy=c.offers[idx]?.copy||c.copy;active=c.id;save();route('offer',c.id)}
-  else showComposer(['Хочу сообщить о свободных часах в салоне без скидок.','Хочу ответить на частый вопрос клиентов и заинтересовать подписчиков.','Хочу показать работу мастера за кадром и привлечь внимание к услуге.'][idx])
+  else showComposer(['Хочу рассказать о своём товаре или услуге.','Хочу ответить на вопрос покупателей о товаре или услуге.','Хочу показать продукт или рабочий процесс за кадром.'][idx])
  });
  $('createIdea').onclick=()=>showComposer('');
  if($('closeComposer'))$('closeComposer').onclick=()=>{composerOpen=false;composerDraft='';render()};
