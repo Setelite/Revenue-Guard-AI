@@ -5,16 +5,12 @@ echo.
 echo Revenue Guard AI - local Cloud.ru test
 echo ======================================
 where py >nul 2>&1
-if %errorlevel%==0 (
-  set "PYCMD=py -3"
-) else (
+if errorlevel 1 (
   where python >nul 2>&1
-  if not %errorlevel%==0 (
-    echo Python 3.11+ is required: https://www.python.org/downloads/
-    pause
-    exit /b 1
-  )
+  if errorlevel 1 goto missing
   set "PYCMD=python"
+) else (
+  set "PYCMD=py -3"
 )
 if not exist ".venv\Scripts\python.exe" (
   echo Creating virtual environment...
@@ -40,6 +36,9 @@ echo.
 echo Finished. No hosting payment required.
 pause
 exit /b 0
+:missing
+echo Python 3.11+ is required: https://www.python.org/downloads/
+goto fail
 :fail
 echo Local test did not pass. Copy error message WITHOUT secrets.
 pause
