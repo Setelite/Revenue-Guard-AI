@@ -16,7 +16,7 @@ const set=(selector,value)=>{const el=d.querySelector(selector);assert.ok(el,'Mi
  assert.match(d.querySelector('h1').textContent,/Что будем/);
  assert.equal(d.querySelectorAll('.quick-action').length,4);
  assert.equal(d.querySelectorAll('.inspo-card').length,3);
- assert.equal(d.querySelectorAll('#bottomnav [data-route]').length,4);
+ assert.equal(d.querySelectorAll('#bottomnav [data-route]').length,5);
  click('#settingsOpen');
  assert.equal(d.querySelectorAll('#bizIndustry option').length,7);
  set('#bizIndustry','food');
@@ -61,6 +61,7 @@ const set=(selector,value)=>{const el=d.querySelector(selector);assert.ok(el,'Mi
  click('#markPublished');
  assert.ok(d.querySelector('#addLead'));
  click('#addLead');
+ assert.equal(JSON.parse(storage.getItem('rg-clean-v2')).leads[0].tracked,true);
  assert.match(d.querySelector('#view').textContent,/Обращений, отмеченных вручную/);
  assert.equal(JSON.parse(storage.getItem('rg-clean-v2')).leads.length,1);
  set('#paidAmount','4500');
