@@ -17,6 +17,8 @@ jobs:
         run: python -m py_compile server.py
       - name: Run contract and safety tests
         run: python -m pytest -q test_server.py
+      - name: Local Cloud.ru simulated end-to-end test (no billable tokens)
+        run: python local_probe.py
       - name: Check frontend JavaScript syntax
         run: |
           python - <<'PY'
