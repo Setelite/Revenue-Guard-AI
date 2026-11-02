@@ -378,7 +378,7 @@ async function addTask(){
    source='ai';
   }else offers=buildOffers(text);
   const id='rg'+Date.now()+Math.random().toString(36).slice(2,6);
-  const c={id,task:text,offers,selected:0,status:'draft',title:offers[0].headline||offers[0].title,copy:offers[0].copy,source,created:now(),approvedAt:null,publishedAt:null};
+  const c={id,task:text,offers,selected:0,status:'draft',title:offers[0].headline||offers[0].title,copy:offers[0].copy,source,businessSnapshot:{...state.business},created:now(),approvedAt:null,publishedAt:null};
   state.campaigns.unshift(c);save();route('offer',id);
  }catch(e){toast('Ошибка ИИ: '+(e.name==='AbortError'?'Превышено время ожидания':e.message))}
  finally{aiBusy=false;if(btn&&document.contains(btn)){btn.disabled=false;btn.innerHTML='Получить 3 идеи '+svg('right')}}
@@ -422,7 +422,7 @@ function home(){
  const recent=state.campaigns[0];
  const heading=recent?.source==='ai'?'3 идеи от ИИ':recent?'Ваши 3 идеи':'Идеи для бизнеса';
  return `<div class="social-home">
-  <div class="social-greeting">Ваш помощник по росту <span aria-hidden="true">✳</span></div><button type="button" class="industry-pill" data-go="business">Сфера: ${esc(industries[state.business.industry]?.[0]||'Другое')} ↗</button>
+  <div class="social-greeting">Ваш помощник по росту <span aria-hidden="true">✳</span></div><button type="button" class="industry-pill" data-go="business">${state.business.name==='Мой бизнес'?'Настроить мой бизнес':'Сфера: '+esc(industries[state.business.industry]?.[0]||'Другое')} ↗</button>
   <h1 class="social-title">Что будем<br><span>улучшать сегодня?</span></h1>
   <button class="hero-cta" type="button" data-compose aria-label="Сформировать новую идею">
    <span class="hero-glimmer" aria-hidden="true">✳</span>
@@ -452,7 +452,7 @@ function offer(){const c=byId();if(!c)return tasks();const o=c.offers[c.selected
 let assetMode='reels';
 function getPack(c){
  if(!c.assets)c.assets={};
- const b=state.business,thing=(b.service||'товар или услуга').trim();
+ const b=c.businessSnapshot||state.business,thing=(b.service||'товар или услуга').trim();
  if(typeof c.assets.post!=='string')c.assets.post=c.copy||'';
  if(typeof c.assets.reels!=='string')c.assets.reels=`Кадр 1 — покажите реальный товар, услугу или процесс.
 Текст на экране: «${c.title||'Что важно знать?'}»
@@ -477,7 +477,7 @@ function creative(){
  <div class="field"><label class="label" for="offerCopy">Текст публикации</label><textarea id="offerCopy" maxlength="800">${esc(c.copy)}</textarea></div>
  <div class="actions"><button class="secondary wide" id="copyOffer">${svg('copy')} Скопировать текст</button><button class="primary wide" id="downloadStory">${svg('download')} Скачать сторис 1080 × 1920</button></div>
  </div>
- <div class="creative-preview"><div class="preview-label">Превью сторис</div><div class="preview theme-${esc(theme)}" id="storyPreview"><div class="topline">${esc(state.business.name)}</div><div class="hero" id="storyTitle">${esc(c.title)}</div><div class="bottomline">Напишите нам, чтобы уточнить детали</div></div>
+ <div class="creative-preview"><div class="preview-label">Превью сторис</div><div class="preview theme-${esc(theme)}" id="storyPreview"><div class="topline">${esc(c.businessSnapshot?.name||state.business.name)}</div><div class="hero" id="storyTitle">${esc(c.title)}</div><div class="bottomline">Напишите нам, чтобы уточнить детали</div></div>
  <div class="theme-switcher"><button class="theme-choice ${theme==='pearl'?'active':''}" data-theme="pearl"><span class="swatch"></span> Pearl</button><button class="theme-choice ${theme==='ink'?'active':''}" data-theme="ink"><span class="swatch ink"></span> Ink</button><button class="theme-choice ${theme==='sunset'?'active':''}" data-theme="sunset"><span class="swatch sunset"></span> Sunset</button></div></div>
  </div>
  <section class="section content-kit"><div class="kit-heading"><h3>Контент-пакет</h3><span>3 формата</span></div>
@@ -571,7 +571,7 @@ function storyPNG(c){
  const palette={pearl:['#dcebf0','#789fa8','#233b44','#f3f5eb'],ink:['#15231f','#506f60','#f7e8c9','#b99c6a'],sunset:['#ffeadc','#da8d7f','#59372f','#f9d79c']}[theme]||['#dcebf0','#789fa8','#233b44','#f3f5eb'];
  const bg=cx.createLinearGradient(0,0,650,1920);bg.addColorStop(0,palette[0]);bg.addColorStop(1,palette[1]);cx.fillStyle=bg;cx.fillRect(0,0,1080,1920);
  const ball=cx.createRadialGradient(780,600,18,860,930,515);ball.addColorStop(0,palette[3]);ball.addColorStop(.55,palette[1]);ball.addColorStop(1,palette[0]);cx.shadowColor='#122b3340';cx.shadowBlur=75;cx.fillStyle=ball;cx.beginPath();cx.arc(915,930,475,0,Math.PI*2);cx.fill();cx.shadowBlur=0;
- cx.fillStyle=palette[2];cx.font='bold 40px Arial,sans-serif';cx.fillText(state.business.name.slice(0,37),85,160);
+ cx.fillStyle=palette[2];cx.font='bold 40px Arial,sans-serif';cx.fillText((c.businessSnapshot?.name||state.business.name).slice(0,37),85,160);
  cx.strokeStyle=palette[2];cx.globalAlpha=.35;cx.lineWidth=2;cx.beginPath();cx.moveTo(85,1550);cx.lineTo(995,1550);cx.stroke();cx.globalAlpha=1;
  let size=104;cx.font='bold '+size+'px Arial,sans-serif';const title=String(c.title||'Ваше предложение');if(title.length>70)size=82;cx.font='bold '+size+'px Arial,sans-serif';
  wrapCanvas(cx,title,85,585,905,size*1.18,7);
