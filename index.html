@@ -313,7 +313,7 @@ function save(){try{localStorage.setItem('rg-clean-v2',JSON.stringify(state))}ca
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3300)}
 const tabs=[['home','Главная','home'],['tasks','Идеи','spark'],['studio','Студия','camera'],['result','Результат','result']];
 function nav(){const tab=page==='creative'||page==='launch'?'studio':page==='offer'?'tasks':page;const item=([id,label,ic])=>`<button type="button" data-route="${id}" class="${tab===id?'active':''}" aria-current="${tab===id?'page':'false'}">${svg(ic)}<span>${label}</span></button>`;$('sidenav').innerHTML=tabs.map(item).join('')+`<button type="button" data-route="business" class="${page==='business'?'active':''}">${svg('business')}<span>Настройки</span></button>`;$('bottomnav').innerHTML=tabs.map(item).join('');document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>route(b.dataset.route));}
-function route(p,id){if(p==='studio'){const current=byId()||state.campaigns[0];if(current){p='creative';id=current.id}else{p='home';composerOpen=true;composerDraft='';}}page=p;if(id!==undefined)active=id;nav();render();window.scrollTo({top:0,behavior:'instant'});}
+function route(p,id){if(p==='studio'){const current=byId()||state.campaigns[0];if(current){p='creative';id=current.id}else{return showComposer('')}}page=p;if(id!==undefined)active=id;nav();render();window.scrollTo({top:0,behavior:'instant'});}
 window.route=route;
 function byId(){return state.campaigns.find(x=>x.id===active)}
 
