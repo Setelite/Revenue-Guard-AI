@@ -28,8 +28,8 @@ def test_access_required(monkeypatch):
 
 def test_status_without_provider(monkeypatch):
     monkeypatch.setenv('RG_DEMO_ACCESS_TOKEN', TOKEN)
-    monkeypatch.delenv('YANDEX_API_KEY', raising=False)
-    monkeypatch.delenv('YANDEX_FOLDER_ID', raising=False)
+    monkeypatch.setenv('AI_PROVIDER', 'cloudru')
+    monkeypatch.delenv('CLOUDRU_API_KEY', raising=False)
     r = client.get('/api/status', headers=headers())
     assert r.status_code == 200
     assert r.json()['ai_enabled'] is False
@@ -37,8 +37,8 @@ def test_status_without_provider(monkeypatch):
 
 def test_provider_contract(monkeypatch):
     monkeypatch.setenv('RG_DEMO_ACCESS_TOKEN', TOKEN)
-    monkeypatch.setenv('YANDEX_API_KEY', 'fake_key')
-    monkeypatch.setenv('YANDEX_FOLDER_ID', 'fake_folder')
+    monkeypatch.setenv('AI_PROVIDER', 'cloudru')
+    monkeypatch.setenv('CLOUDRU_API_KEY', 'fake_key')
     server.attempts.clear()
     seen = {}
     class MockResponse:
@@ -57,12 +57,22 @@ def test_provider_contract(monkeypatch):
         async def __aexit__(self, *args): pass
         async def post(self, url, **kwargs):
             seen.update(kwargs)
-            assert url == 'https://ai.api.cloud.yandex.net/v1/chat/completions'
+            assert url == 'https://foundation-models.api.cloud.ru/v1/chat/completions'
             return MockResponse()
     monkeypatch.setattr(server.httpx, 'AsyncClient', MockClient)
     r = client.post('/api/generate', headers=headers(), json=valid_request())
     assert r.status_code == 200, r.text
     assert len(r.json()['offers']) == 3
-    assert seen['headers']['OpenAI-Project']=='fake_folder'
-    assert seen['headers']['Authorization']=='Api-Key fake_key'
-    assert seen['json']['model']=='gpt://fake_folder/yandexgpt-5.1'
+    assert seen['headers']['Authorization']=='Bearer fake_key'
+    assert seen['json']['model']=='ai-sage/GigaChat3-10B-A1.8B'
+    assert seen['json']['response_format']=={'type':'json_object'}
+    assert seen['json']['max_completion_tokens']==2500
+
+def test_yandex_remains_optional(monkeypatch):
+    monkeypatch.setenv('AI_PROVIDER', 'yandex')
+    monkeypatch.setenv('YANDEX_API_KEY', 'test_key')
+    monkeypatch.setenv('YANDEX_FOLDER_ID', 'test_folder')
+    config, name = server.provider_config()
+    assert name == 'Yandex AI Studio'
+    assert config['url'] == 'https://ai.api.cloud.yandex.net/v1/chat/completions'
+    assert config['model'] == 'gpt://test_folder/yandexgpt-5.1'
