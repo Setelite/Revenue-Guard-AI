@@ -362,7 +362,7 @@ body[data-industry="b2b"] .inspo-2{background:linear-gradient(135deg,#bcd6d3,#78
  .loss-lead{padding:17px}
 }
 @media(max-width:360px){.bottom button{font-size:9px}.loss-buttons button{font-size:11px;padding:10px 2px}.loss-stat strong{font-size:43px}}
-</style></head>
+</style><style>.loss-reopen{background:transparent;border:0;color:#b7518b;font-size:12px;font-weight:780;margin-left:8px;padding:7px}.loss-reopen:hover{text-decoration:underline}</style></head>
 <body>
 <div class="layout">
   <aside class="side">
@@ -600,9 +600,9 @@ function losses(){
  ${ordered.length?ordered.map(l=>{const urgent=isRiskLead(l),hrs=leadHours(l),closed=!isOpenLead(l);
  return `<article class="loss-lead ${urgent?'is-urgent':''}" data-lead-id="${esc(l.id)}">
   <div class="loss-lead-top"><span class="loss-source">${esc(leadSources[l.source]||'Другое')}</span><span class="loss-status ${urgent?'urgent':''}">${urgent?'Требует внимания':leadStatuses[l.status]}</span></div>
-  <div class="loss-lead-line"><strong>${safeMoney(l.estimate)?fmt(l.estimate):'Чек не указан'}</strong><span>${esc(leadAge(hrs))} без действий</span></div>
+  <div class="loss-lead-line"><strong>${safeMoney(l.estimate)?fmt(l.estimate):'Чек не указан'}</strong><span>${closed?'Завершено':esc(leadAge(hrs))+' без действий'}</span></div>
   <div class="loss-lead-sub">${esc(new Date(l.createdAt).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))} · ${urgent?'Нет отметки о действии дольше заданного срока':closed?'Обращение закрыто':'Ожидает следующего действия'}</div>
-  ${!closed?`<div class="loss-buttons"><button type="button" data-lead-action="working" data-id="${esc(l.id)}">Ответили</button><button type="button" data-lead-action="won" data-id="${esc(l.id)}">Продано</button><button type="button" data-lead-action="lost" data-id="${esc(l.id)}">Без покупки</button></div>`:`<div class="loss-closed">${l.status==='won'?'Закрыто как продажа (без автоматического учёта денег)':'Закрыто без покупки'}</div>`}
+  ${!closed?`<div class="loss-buttons"><button type="button" data-lead-action="working" data-id="${esc(l.id)}">Ответили</button><button type="button" data-lead-action="won" data-id="${esc(l.id)}">Продано</button><button type="button" data-lead-action="lost" data-id="${esc(l.id)}">Без покупки</button></div>`:`<div class="loss-closed">${l.status==='won'?'Закрыто как продажа (без автоматического учёта денег)':'Закрыто без покупки'} <button type="button" class="loss-reopen" data-lead-action="working" data-id="${esc(l.id)}">Вернуть в работу</button></div>`}
  </article>`}).join(''):`<div class="loss-empty">${svg('check')}<strong>Пока нет обращений</strong><span>Добавьте первое — и приложение поможет не забыть его обработать.</span></div>`}
  ${legacyCount?`<p class="loss-legacy">Ещё ${legacyCount} старых записей учитываются в прежней статистике. Для них неизвестен статус обработки, поэтому мы не считаем их просроченными.</p>`:''}
  </section>
@@ -682,7 +682,7 @@ document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{c.posterThem
   save();toast('Обращение добавлено');render();
  };
  document.querySelectorAll('[data-lead-action]').forEach(btn=>btn.onclick=()=>{
-  const l=state.leads.find(x=>x.id===btn.dataset.id&&isTrackedLead(x));if(!l||!isOpenLead(l))return;
+  const l=state.leads.find(x=>x.id===btn.dataset.id&&isTrackedLead(x));if(!l||(!isOpenLead(l)&&btn.dataset.leadAction!=='working'))return;
   l.status=btn.dataset.leadAction;l.lastTouchAt=now();l.closedAt=l.status==='won'||l.status==='lost'?now():null;
   save();toast(l.status==='working'?'Действие отмечено':l.status==='won'?'Закрыто как продажа — оплату учитывайте отдельно':'Закрыто без покупки');render();
  });
