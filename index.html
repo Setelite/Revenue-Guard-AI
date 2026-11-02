@@ -309,7 +309,7 @@ body[data-industry="b2b"] .inspo-2{background:linear-gradient(135deg,#bcd6d3,#78
 <script>
 (()=>{'use strict';
 const $=id=>document.getElementById(id);
-const icon={calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 2v6M17 2v6M3 10h18"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 19v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5"/>',tag:'<path d="m11 3 10 10-8 8L3 11V3h8z"/><circle cx="7.5" cy="7.5" r="1"/>',camera:'<rect x="2" y="5" width="20" height="16" rx="4"/><circle cx="12" cy="13" r="4"/><path d="M7 5l1.5-2h7L17 5"/>',home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',tasks:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 10h8M8 14h6"/>',result:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',business:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-5 3-7 8-7s8 2 8 7"/>',mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',right:'<path d="m9 5 7 7-7 7"/>',back:'<path d="m15 18-6-6 6-6"/>',check:'<path d="m5 12 4 4L19 6"/>',spark:'<path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9zM19 17l.6 1.4L21 19l-1.4.6L19 21l-.6-1.4L17 19l1.4-.6z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',download:'<path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/>',plus:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="m4 20 4-.8L19 8a2 2 0 0 0-3-3L5 16z"/>'};
+const icon={calendar:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 2v6M17 2v6M3 10h18"/>',users:'<circle cx="9" cy="8" r="3"/><path d="M3 19v-2a6 6 0 0 1 12 0v2M16 5a3 3 0 0 1 0 6M18 14a5 5 0 0 1 3 5"/>',tag:'<path d="m11 3 10 10-8 8L3 11V3h8z"/><circle cx="7.5" cy="7.5" r="1"/>',camera:'<rect x="2" y="5" width="20" height="16" rx="4"/><circle cx="12" cy="13" r="4"/><path d="M7 5l1.5-2h7L17 5"/>',home:'<path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',tasks:'<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 10h8M8 14h6"/>',result:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',business:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-5 3-7 8-7s8 2 8 7"/>',mic:'<rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5m-4 0h8"/>',right:'<path d="m9 5 7 7-7 7"/>',back:'<path d="m15 18-6-6 6-6"/>',check:'<path d="m5 12 4 4L19 6"/>',spark:'<path d="m12 2 1.9 6.1L20 10l-6.1 1.9L12 18l-1.9-6.1L4 10l6.1-1.9zM19 17l.6 1.4L21 19l-1.4.6L19 21l-.6-1.4L17 19l1.4-.6z"/>',copy:'<rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>',download:'<path d="M12 3v12m-4-4 4 4 4-4M4 17v4h16v-4"/>',plus:'<path d="M12 5v14M5 12h14"/>',edit:'<path d="m4 20 4-.8L19 8a2 2 0 0 0-3-3L5 16z"/>',alert:'<path d="M12 3 2 21h20L12 3zM12 9v5m0 4h.01"/>'};
 const svg=(name)=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" aria-hidden="true">${icon[name]||icon.spark}</svg>`;
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt=n=>Number(n||0).toLocaleString('ru-RU')+' ₽';
@@ -322,6 +322,7 @@ if(!state.business.industry)state.business.industry=state.business.name==='Ст�
 state.business.audience=state.business.audience||'';
 state.business.advantage=state.business.advantage||'';
 if(!Array.isArray(state.leads))state.leads=[];
+if(![4,12,24,48].includes(Number(state.leadSlaHours)))state.leadSlaHours=24;
 
 let page='home',active=null,voice=null,aiBusy=false,aiVerified=false,composerOpen=false,composerDraft='';
 let aiEndpoint=localStorage.getItem('rg-ai-endpoint')||'';
@@ -356,7 +357,7 @@ async function verifyAI(){
 const now=()=>new Date().toISOString();
 function save(){try{localStorage.setItem('rg-clean-v2',JSON.stringify(state))}catch(e){toast('Нет доступа к сохранению. Данные могут исчезнуть.')}}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3300)}
-const tabs=[['home','Главная','home'],['tasks','Идеи','spark'],['studio','Студия','camera'],['result','Результат','result']];
+const tabs=[['home','Главная','home'],['tasks','Идеи','spark'],['studio','Студия','camera'],['losses','Потери','alert'],['result','Итоги','result']];
 function nav(){const tab=page==='creative'||page==='launch'?'studio':page==='offer'?'tasks':page;const item=([id,label,ic])=>`<button type="button" data-route="${id}" class="${tab===id?'active':''}" aria-current="${tab===id?'page':'false'}">${svg(ic)}<span>${label}</span></button>`;$('sidenav').innerHTML=tabs.map(item).join('')+`<button type="button" data-route="business" class="${page==='business'?'active':''}">${svg('business')}<span>Настройки</span></button>`;$('bottomnav').innerHTML=tabs.map(item).join('');document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>route(b.dataset.route));}
 function route(p,id){if(p==='studio'){const current=byId()||state.campaigns[0];if(current){p='creative';id=current.id}else{return showComposer('')}}page=p;if(id!==undefined)active=id;nav();render();window.scrollTo({top:0,behavior:'instant'});}
 window.route=route;
@@ -493,6 +494,50 @@ function creative(){
  <div class="section"><div class="notice">Ничего не публикуется автоматически. Проверьте цены, условия и факты перед использованием.</div><div class="actions"><button class="primary wide" id="approveOffer">${c.status==='approved'||c.status==='published'?'К кампании':'Утвердить и продолжить'} ${svg('right')}</button></div></div>`;
 }
 function launch(){const c=byId();if(!c)return tasks();const approved=c.status==='approved'||c.status==='published';return `<button class="back" data-go="tasks">‹ Назад к задачам</button><div class="step">Шаг 3 из 3</div><h1 class="h1">${c.status==='published'?'Кампания запущена':'Почти готово'}</h1><p class="lead">${approved?'Теперь можно размещать материалы и отмечать реальные продажи.':'Сначала утвердите предложение.'}</p><div class="section card"><span class="status ${approved?'good':''}">${c.status==='published'?'Размещено':approved?'Утверждено':'Требует утверждения'}</span><h2 style="font-size:25px;letter-spacing:-.03em;line-height:1.2;margin:16px 0">${esc(c.title)}</h2><p style="color:#6b7078;margin:0">${esc(c.copy)}</p><hr class="line"><p class="small">Размещайте предложение только в разрешённых каналах бизнеса. После публикации отметьте это здесь.</p>${c.status==='approved'?`<button id="markPublished" class="primary wide">Отметить публикацию</button>`:''}${c.status!=='published'?`<button class="secondary wide" style="margin-top:10px" data-go="creative" data-id="${esc(c.id)}">Изменить материалы</button>`:''}</div>${c.status==='published'?`<div class="section"><h3>Результат кампании</h3><div class="card"><div class="metricrow"><span>Обращений, отмеченных вручную</span><strong>${state.leads.filter(x=>x.campaignId===c.id).length}</strong></div><button type="button" id="addLead" class="secondary wide" style="margin-bottom:18px">${svg('plus')} Добавить обращение</button><label class="label" for="paidAmount">Полученная оплата, ₽</label><input id="paidAmount" type="number" min="1" max="100000000" inputmode="numeric" placeholder="Например, 4500"><div class="space"></div><button class="primary wide" id="addPayment">${svg('plus')} Добавить оплату</button></div><div class="hint">Добавляйте только подтверждённые обращения и реальные оплаты. По умолчанию связь с кампанией не доказывает причинный эффект.</div></div>`:''}`}
+
+const leadSources={instagram:'Instagram',telegram:'Telegram',site:'Сайт',phone:'Звонок',walkin:'Лично',other:'Другое'};
+const leadStatuses={new:'Не обработано',working:'В работе',won:'Закрыто успешно',lost:'Закрыто без покупки'};
+const isTrackedLead=l=>l?.tracked===true&&leadStatuses[l.status]&&Number.isFinite(Date.parse(l.createdAt));
+const isOpenLead=l=>l.status==='new'||l.status==='working';
+const leadHours=l=>Math.max(0,(Date.now()-Date.parse(l.lastTouchAt||l.createdAt))/3600000);
+const isRiskLead=l=>isTrackedLead(l)&&isOpenLead(l)&&leadHours(l)>=state.leadSlaHours;
+const leadAge=h=>h<1?'меньше часа':h<24?Math.floor(h)+' ч.':Math.floor(h/24)+' дн.';
+const safeMoney=n=>Number.isFinite(Number(n))&&Number(n)>0&&Number(n)<=100000000?Number(n):0;
+const localDateTime=()=>{const d=new Date();return new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16)};
+function losses(){
+ const tracked=state.leads.filter(isTrackedLead),legacyCount=state.leads.length-tracked.length;
+ const attention=tracked.filter(isRiskLead),open=tracked.filter(isOpenLead);
+ const potential=attention.reduce((sum,l)=>sum+safeMoney(l.estimate),0);
+ const unknown=attention.filter(l=>!safeMoney(l.estimate)).length;
+ const ordered=[...tracked].sort((a,b)=>Number(isRiskLead(b))-Number(isRiskLead(a))||Number(isOpenLead(b))-Number(isOpenLead(a))||Date.parse(b.createdAt)-Date.parse(a.createdAt));
+ return `<section class="losses-page">
+ <div class="losses-eyebrow">${svg('alert')} КОНТРОЛЬ ОБРАЩЕНИЙ</div>
+ <h1 class="losses-title">Где теряются<br><em>деньги?</em></h1>
+ <p class="lead">Не пропускайте обращения. Отмечайте следующий шаг и возвращайтесь к тем, что давно без ответа.</p>
+ <div class="losses-summary">
+  <div class="loss-stat loss-hot"><span>Нужно проверить</span><strong id="riskCount">${attention.length}</strong><small>Без действий ≥ ${state.leadSlaHours} ч.</small></div>
+  <div class="loss-stat"><span>Открытых</span><strong id="openCount">${open.length}</strong><small>Вручную внесённые</small></div>
+ </div>
+ <div class="potential-box"><div><span>Под риском · условная сумма</span><strong id="riskValue">${fmt(potential)}</strong></div><div class="potential-note">Сумма оценок по ${attention.length} необработанным вовремя обращениям${unknown?' · '+unknown+' без оценки':''}. Это не доказанные потери или ожидаемая выручка.</div></div>
+ <div class="risk-settings"><label for="riskHours">Проверять, если не было действий</label><select id="riskHours"><option value="4" ${state.leadSlaHours===4?'selected':''}>4 часа</option><option value="12" ${state.leadSlaHours===12?'selected':''}>12 часов</option><option value="24" ${state.leadSlaHours===24?'selected':''}>24 часа</option><option value="48" ${state.leadSlaHours===48?'selected':''}>48 часов</option></select></div>
+ <section class="loss-add"><div class="loss-section-head"><h2>Новое обращение</h2><span>Без ФИО и телефонов</span></div><form id="leadForm">
+ <div class="loss-field-row"><div class="field"><label class="label" for="newLeadSource">Откуда пришло</label><select id="newLeadSource">${Object.entries(leadSources).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div><div class="field"><label class="label" for="newLeadEstimate">Возможный чек, ₽</label><input id="newLeadEstimate" type="number" inputmode="decimal" step="1" min="0" max="100000000" placeholder="Неизвестно" value="${safeMoney(state.business.price)||''}"></div></div>
+ <div class="field"><label class="label" for="newLeadDate">Когда пришло обращение</label><input id="newLeadDate" type="datetime-local" required value="${localDateTime()}" max="${localDateTime()}"></div>
+ <button type="submit" class="primary wide">${svg('plus')} Добавить обращение</button></form></section>
+ <section class="loss-list"><div class="loss-section-head"><h2>Ваши обращения</h2><span>${tracked.length} учтено</span></div>
+ ${ordered.length?ordered.map(l=>{const urgent=isRiskLead(l),hrs=leadHours(l),closed=!isOpenLead(l);
+ return `<article class="loss-lead ${urgent?'is-urgent':''}" data-lead-id="${esc(l.id)}">
+  <div class="loss-lead-top"><span class="loss-source">${esc(leadSources[l.source]||'Другое')}</span><span class="loss-status ${urgent?'urgent':''}">${urgent?'Требует внимания':leadStatuses[l.status]}</span></div>
+  <div class="loss-lead-line"><strong>${safeMoney(l.estimate)?fmt(l.estimate):'Чек не указан'}</strong><span>${esc(leadAge(hrs))} без действий</span></div>
+  <div class="loss-lead-sub">${esc(new Date(l.createdAt).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))} · ${urgent?'Нет отметки о действии дольше заданного срока':closed?'Обращение закрыто':'Ожидает следующего действия'}</div>
+  ${!closed?`<div class="loss-buttons"><button type="button" data-lead-action="working" data-id="${esc(l.id)}">Ответили</button><button type="button" data-lead-action="won" data-id="${esc(l.id)}">Продано</button><button type="button" data-lead-action="lost" data-id="${esc(l.id)}">Без покупки</button></div>`:`<div class="loss-closed">${l.status==='won'?'Закрыто как продажа (без автоматического учёта денег)':'Закрыто без покупки'}</div>`}
+ </article>`}).join(''):`<div class="loss-empty">${svg('check')}<strong>Пока нет обращений</strong><span>Добавьте первое — и приложение поможет не забыть его обработать.</span></div>`}
+ ${legacyCount?`<p class="loss-legacy">Ещё ${legacyCount} старых записей учитываются в прежней статистике. Для них неизвестен статус обработки, поэтому мы не считаем их просроченными.</p>`:''}
+ </section>
+ <div class="loss-disclaimer">Это локальный журнал, а не подключение к Instagram, мессенджерам или CRM. Приоритет определяется временем последнего отмеченного действия и выбранным сроком. Данные не проверяются автоматически. Для реальных клиентов не вводите персональные данные.</div>
+ </section>`;
+}
+
 function results(){
  const total=state.payments.reduce((n,p)=>n+Number(p.amount||0),0);
  const published=state.campaigns.filter(c=>c.status==='published').length;
@@ -525,7 +570,7 @@ return `<h1 class="h1">Профиль бизнеса</h1><p class="lead">При�
 </div>
 <div class="section"><p class="help">Данные хранятся только в этом браузере. Не добавляйте персональные сведения клиентов.</p><button type="button" class="ghost danger" id="resetDemo">Очистить демонстрационные данные</button></div>`;
 }
-function render(){document.body.dataset.industry=industries[state.business.industry]?state.business.industry:'other';nav();$('salonName').textContent=state.business.name;const views={home,tasks,offer,creative,launch,result:results,business};$('view').innerHTML=(views[page]||home)();$('settingsOpen').onclick=()=>route('business');wire();}
+function render(){document.body.dataset.industry=industries[state.business.industry]?state.business.industry:'other';nav();$('salonName').textContent=state.business.name;const views={home,tasks,offer,creative,launch,losses,result:results,business};$('view').innerHTML=(views[page]||home)();$('settingsOpen').onclick=()=>route('business');wire();}
 function wire(){document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>route(b.dataset.go,b.dataset.id)));document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const c=state.campaigns.find(x=>x.id===b.dataset.open);route(c.status==='draft'?'offer':c.status==='chosen'?'creative':'launch',c.id)}));document.querySelectorAll('[data-example]').forEach(b=>b.onclick=()=>addShort(b.dataset.example));if(page==='home'){
  document.querySelectorAll('[data-compose]').forEach(b=>b.onclick=()=>showComposer(''));
  document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>showComposer(b.dataset.quick));
@@ -550,7 +595,27 @@ function wire(){document.querySelectorAll('[data-go]').forEach(b=>b.addEventList
  $('copyAsset').onclick=()=>copyText($('assetText').value);
 document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{c.posterTheme=b.dataset.theme;save();document.querySelectorAll('[data-theme]').forEach(x=>x.classList.toggle('active',x===b));$('storyPreview').className='preview theme-'+c.posterTheme});const sync=()=>{c.title=title.value;c.copy=copy.value;getPack(c).post=c.copy;save();$('storyTitle').textContent=c.title};title.oninput=sync;copy.oninput=sync;$('copyOffer').onclick=()=>copyText(`${title.value}\n\n${copy.value}`);$('downloadStory').onclick=()=>storyPNG(c);$('approveOffer').onclick=()=>{if(!c.title.trim()||!c.copy.trim()){toast('Добавьте заголовок и текст');return}c.status='approved';c.approvedAt=now();save();route('launch',c.id)}}if(page==='launch'){const c=byId();
  if($('addLead'))$('addLead').onclick=()=>{state.leads.unshift({id:'lead'+Date.now(),campaignId:c.id,date:now()});save();toast('Обращение учтено');render()};
- if($('markPublished'))$('markPublished').onclick=()=>{c.status='published';c.publishedAt=now();save();render()};if($('addPayment'))$('addPayment').onclick=()=>{const n=Number($('paidAmount').value);if(!Number.isFinite(n)||n<=0||n>100000000){toast('Укажите корректную сумму оплаты');return}state.payments.unshift({id:'p'+Date.now(),campaignId:c.id,title:c.title,amount:Math.round(n*100)/100,date:now()});save();toast('Оплата добавлена');route('result')}}if(page==='business'){$('bizForm').onsubmit=e=>{e.preventDefault();const b=state.business;b.industry=$('bizIndustry').value;b.name=$('bizName').value.trim()||'Мой бизнес';b.service=$('bizService').value.trim()||'Товар или услуга';b.audience=$('bizAudience').value.trim();b.advantage=$('bizAdvantage').value.trim();b.price=Number($('bizPrice').value)||0;b.channel=$('bizChannels').value.trim();b.budget=Number($('bizBudget').value)||0;save();toast('Профиль бизнеса сохранён');render()};$('connectAI').onclick=async()=>{
+ if($('markPublished'))$('markPublished').onclick=()=>{c.status='published';c.publishedAt=now();save();render()};if($('addPayment'))$('addPayment').onclick=()=>{const n=Number($('paidAmount').value);if(!Number.isFinite(n)||n<=0||n>100000000){toast('Укажите корректную сумму оплаты');return}state.payments.unshift({id:'p'+Date.now(),campaignId:c.id,title:c.title,amount:Math.round(n*100)/100,date:now()});save();toast('Оплата добавлена');route('result')}}if(page==='losses'){
+ const form=$('leadForm');
+ $('riskHours').onchange=e=>{state.leadSlaHours=Number(e.target.value);save();render()};
+ form.onsubmit=e=>{
+  e.preventDefault();
+  const src=$('newLeadSource').value,raw=$('newLeadEstimate').value,date=$('newLeadDate').value;
+  const t=new Date(date).getTime();
+  if(!Number.isFinite(t)||t>Date.now()+60000||t<Date.now()-365*86400000){toast('Укажите дату не старше года и не в будущем');return}
+  const estimate=raw===''?0:Number(raw);
+  if(!Number.isFinite(estimate)||estimate<0||estimate>100000000){toast('Проверьте возможный чек');return}
+  const id='lead'+Date.now()+Math.random().toString(36).slice(2,8);
+  state.leads.unshift({id,tracked:true,source:leadSources[src]?src:'other',estimate,createdAt:new Date(t).toISOString(),lastTouchAt:new Date(t).toISOString(),status:'new'});
+  save();toast('Обращение добавлено');render();
+ };
+ document.querySelectorAll('[data-lead-action]').forEach(btn=>btn.onclick=()=>{
+  const l=state.leads.find(x=>x.id===btn.dataset.id&&isTrackedLead(x));if(!l||!isOpenLead(l))return;
+  l.status=btn.dataset.leadAction;l.lastTouchAt=now();l.closedAt=l.status==='won'||l.status==='lost'?now():null;
+  save();toast(l.status==='working'?'Действие отмечено':l.status==='won'?'Закрыто как продажа — оплату учитывайте отдельно':'Закрыто без покупки');render();
+ });
+}
+if(page==='business'){$('bizForm').onsubmit=e=>{e.preventDefault();const b=state.business;b.industry=$('bizIndustry').value;b.name=$('bizName').value.trim()||'Мой бизнес';b.service=$('bizService').value.trim()||'Товар или услуга';b.audience=$('bizAudience').value.trim();b.advantage=$('bizAdvantage').value.trim();b.price=Number($('bizPrice').value)||0;b.channel=$('bizChannels').value.trim();b.budget=Number($('bizBudget').value)||0;save();toast('Профиль бизнеса сохранён');render()};$('connectAI').onclick=async()=>{
  const raw=$('aiEndpoint').value.trim().replace(/\/+$/,''),token=$('aiToken').value.trim();
  if(raw){
   let u;try{u=new URL(raw)}catch(e){toast('Неверный адрес сервера');return}
