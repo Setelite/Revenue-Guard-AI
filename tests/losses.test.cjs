@@ -48,7 +48,7 @@ const set=(x,v)=>{const e=d.querySelector(x);assert.ok(e,'Missing '+x);e.value=v
  assert.equal(state.leads[0].tracked,true);
  assert.equal(state.leads[0].source,'instagram');
  assert.equal(state.leads[0].estimate,3500);
- assert.doesNotMatch(app.window.localStorage.getItem('rg-clean-v2'),/Тестовый Клиент|111-22-33|test@example.com|@demo|Светильник|Вымышленный запрос/,'No personal contact stored in browser persistence');
+ assert.doesNotMatch(app.window.localStorage.getItem('rg-clean-v2'),/Тестовый Клиент|111-22-33|test@example.com|@demo|Вымышленный запрос/,'No personal contact stored in browser persistence');
  assert.match(d.querySelector('.loss-profile-name').textContent,/Тестовый Клиент/);
  assert.match(d.querySelector('.client-profile').textContent,/test@example.com/);
  assert.match(d.querySelector('.client-profile').textContent,/@demo/);
