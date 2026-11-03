@@ -428,9 +428,9 @@ async function verifyAI(){
 const now=()=>new Date().toISOString();
 function save(){try{localStorage.setItem('rg-clean-v2',JSON.stringify(state))}catch(e){toast('Нет доступа к сохранению. Данные могут исчезнуть.')}}
 function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toast.timer);toast.timer=setTimeout(()=>t.classList.remove('show'),3300)}
-const tabs=[['home','Главная','home'],['tasks','Идеи','spark'],['studio','Студия','camera'],['losses','Потери','alert'],['result','Итоги','result']];
+const tabs=[['home','Главная','home'],['tasks','Идеи','spark'],['studio','Студия','camera'],['losses','Клиенты','users'],['result','Итоги','result']];
 function nav(){const tab=page==='creative'||page==='launch'?'studio':page==='offer'?'tasks':page;const item=([id,label,ic])=>`<button type="button" data-route="${id}" class="${tab===id?'active':''}" aria-current="${tab===id?'page':'false'}">${svg(ic)}<span>${label}</span></button>`;$('sidenav').innerHTML=tabs.map(item).join('')+`<button type="button" data-route="business" class="${page==='business'?'active':''}">${svg('business')}<span>Настройки</span></button>`;$('bottomnav').innerHTML=tabs.map(item).join('');document.querySelectorAll('[data-route]').forEach(b=>b.onclick=()=>route(b.dataset.route));}
-function route(p,id){if(p==='studio'){const current=byId()||state.campaigns[0];if(current){p='creative';id=current.id}else{return showComposer('')}}page=p;if(id!==undefined)active=id;nav();render();window.scrollTo({top:0,behavior:'instant'});}
+function route(p,id){page=p;if(id!==undefined)active=id;nav();render();window.scrollTo({top:0,behavior:'instant'});}
 window.route=route;
 function byId(){return state.campaigns.find(x=>x.id===active)}
 
@@ -520,7 +520,21 @@ function home(){
  </div>`;
 }
 function campaignRow(c){const d=new Date(c.created);const date=isNaN(d)?'':d.toLocaleDateString('ru-RU',{day:'numeric',month:'short'});const label={draft:'Выбор идеи',chosen:'Креатив',approved:'Утверждено',published:'Размещено'}[c.status]||'В работе';return `<button class="taskrow" data-open="${esc(c.id)}"><span><span class="name">${esc(c.title||c.task)}</span><span class="sub">${date} · ${label}</span></span><span class="chevron">›</span></button>`}
-function tasks(){return `<h1 class="h1">Ваши задачи</h1><p class="lead">От идеи до результата — всё в одном месте.</p><div class="section">${state.campaigns.length?state.campaigns.map(campaignRow).join(''):`<div class="empty"><strong>Пока нет задач</strong>Создайте первую на главном экране.<div class="space"></div><button class="primary" data-go="home">Поставить задачу</button></div>`}</div>`}
+
+const ideaLibrary=[
+ {icon:'↗',name:'Увеличить продажи',desc:'Продать больше без выдуманных скидок',prompt:'Предложи три разных способа увеличить продажи нашего основного товара или услуги без скидок и недоказанных обещаний.'},
+ {icon:'✳',name:'Новые клиенты',desc:'Привлечь целевую аудиторию',prompt:'Придумай три реалистичные механики привлечения новых покупателей с нашим бюджетом и доступными каналами.'},
+ {icon:'♡',name:'Повторные покупки',desc:'Повод вернуться к бизнесу',prompt:'Найди три способа повысить повторные покупки без навязчивой рассылки и без нарушения согласий.'},
+ {icon:'▶',name:'Идея для видео',desc:'Короткий ролик с продуктом',prompt:'Предложи три концепции короткого вертикального видео для продвижения нашей основной услуги или товара.'},
+ {icon:'◉',name:'Новый продукт',desc:'Объяснить ценность запуска',prompt:'Нужно представить новый товар или услугу. Предложи три разных варианта первого анонса без выдуманных фактов.'},
+ {icon:'✦',name:'Усилить предложение',desc:'Понятный оффер без давления',prompt:'Как улучшить наше текущее предложение для целевой аудитории? Придумай три разных подхода с проверяемыми преимуществами.'}
+];
+function tasks(){
+ return `<section class="ideas-page"><div class="step">ВАШИ ВОЗМОЖНОСТИ</div><h1 class="h1">Идеи, которые<br><em>двигают бизнес.</em></h1><p class="lead">Выберите задачу. На следующем шаге уточните детали и получите три подхода.</p>
+ <div class="ideas-library">${ideaLibrary.map((idea,i)=>`<button type="button" class="idea-tile" data-idea="${i}" aria-label="${esc(idea.name)}"><span class="idea-tile-icon">${idea.icon}</span><span><strong>${esc(idea.name)}</strong><small>${esc(idea.desc)}</small></span><span class="idea-tile-arrow">↗</span></button>`).join('')}</div>
+ <div class="section"><div class="spread"><h3>Мои кампании</h3><span class="ideas-count">${state.campaigns.length}</span></div>${state.campaigns.length?state.campaigns.map(campaignRow).join(''):`<div class="empty"><strong>Ещё нет кампаний</strong>Выберите сценарий выше, чтобы создать первую.</div>`}</div>
+ <div class="hint">Пока сервер ИИ не подключён, новые предложения создаются из демонстрационных шаблонов.</div></section>`;
+}
 function offer(){const c=byId();if(!c)return tasks();const o=c.offers[c.selected];return `<button class="back" data-go="tasks">‹ К задачам</button><div class="step">01 / 03 · ВЫБОР СТРАТЕГИИ</div><h1 class="h1">Три идеи.<br><em>Одна цель.</em></h1><p class="lead">Выберите подход — текст и сторис соберутся в следующем шаге.</p><div class="section">${c.offers.map((x,i)=>`<div class="offer ${c.selected===i?'active':''}" role="button" tabindex="0" data-select="${i}" aria-pressed="${c.selected===i}"><div class="offerhead"><div style="flex:1"><div class="offer-num">ВАРИАНТ 0${i+1}</div><h3>${esc(x.title)}</h3><p>${esc(x.subtitle)}</p></div><span class="radio"></span></div></div>`).join('')}</div><div class="card"><div class="step">ГОТОВЫЙ ТЕКСТ</div><p style="font-size:19px;line-height:1.6;margin:0 0 14px">${esc(o.copy)}</p>${o.caution?`<div class="offer-details">${esc(o.caution)}</div>`:''}</div><div class="actions"><button class="primary wide" id="selectOffer">Создать креатив ${svg('right')}</button></div><div class="hint">${c.source==='ai'?'Сгенерировано ИИ.':'Демо: создано локально.'} Проверьте все утверждения перед публикацией.</div>`}
 let assetMode='reels';
 function getPack(c){
@@ -539,6 +553,28 @@ function getPack(c){
 Расскажите, пожалуйста, что именно хотите узнать про ${thing.toLowerCase()}? Мы уточним наличие, стоимость и условия и ответим вам.`;
  return c.assets;
 }
+
+const studioDefaults={title:'Узнайте больше',copy:'Расскажем подробнее о товаре или услуге. Напишите нам, чтобы уточнить условия.',posterTheme:'pearl'};
+if(!state.studioDraft||typeof state.studioDraft.title!=='string'||typeof state.studioDraft.copy!=='string')state.studioDraft={...studioDefaults};
+function studio(){
+ const draft=state.studioDraft,theme=['pearl','ink','sunset'].includes(draft.posterTheme)?draft.posterTheme:'pearl';
+ return `<section class="indie-studio"><div class="step">REVENUE GUARD · STUDIO</div><h1 class="h1">Создавайте<br><em>настроение.</em></h1><p class="lead">Дизайнер сторис без обязательной кампании. Просто придумайте заголовок и скачайте постер.</p>
+ <div class="section grid2 creative-layout"><div class="creative-fields">
+ <div class="field"><label class="label" for="studioTitle">Заголовок сторис</label><input id="studioTitle" maxlength="100" value="${esc(draft.title)}"></div>
+ <div class="field"><label class="label" for="studioCopy">Текст для публикации</label><textarea id="studioCopy" maxlength="800">${esc(draft.copy)}</textarea></div>
+ <div class="studio-presets"><div class="label">Быстрый стиль</div><div class="studio-presets-row">
+ <button type="button" data-studio-preset="0">Новый продукт</button>
+ <button type="button" data-studio-preset="1">Вопрос аудитории</button>
+ <button type="button" data-studio-preset="2">Обзор</button></div></div>
+ <div class="actions"><button type="button" class="primary wide" id="studioDownload">${svg('download')} Скачать PNG 1080 × 1920</button><button type="button" class="secondary wide" id="studioCopy">${svg('copy')} Скопировать текст</button></div>
+ <div class="hint">Постер создаётся локально из текста и оформления. Это не генерация изображения нейросетью.</div>
+ </div>
+ <div class="creative-preview"><div class="preview-label">Предпросмотр</div><div class="preview theme-${theme}" id="studioPreview"><div class="topline">${esc(state.business.name)}</div><div class="hero" id="studioHeadline">${esc(draft.title)}</div><div class="bottomline">Уточните детали в сообщениях</div></div>
+ <div class="theme-switcher"><button type="button" data-studio-theme="pearl" class="theme-choice ${theme==='pearl'?'active':''}"><span class="swatch"></span>Pearl</button><button type="button" data-studio-theme="ink" class="theme-choice ${theme==='ink'?'active':''}"><span class="swatch ink"></span>Ink</button><button type="button" data-studio-theme="sunset" class="theme-choice ${theme==='sunset'?'active':''}"><span class="swatch sunset"></span>Sunset</button></div></div></div>
+ ${state.campaigns.length?`<div class="section"><h3>Кампании в работе</h3>${state.campaigns.slice(0,3).map(c=>`<button class="taskrow" type="button" data-studio-campaign="${esc(c.id)}"><span class="name">${esc(c.title)}</span><span class="chevron">›</span></button>`).join('')}</div>`:''}
+ </section>`;
+}
+
 function creative(){
  const c=byId();if(!c)return tasks();
  const theme=c.posterTheme||'pearl',pack=getPack(c);
@@ -642,7 +678,7 @@ return `<h1 class="h1">Профиль бизнеса</h1><p class="lead">При�
 </div>
 <div class="section"><p class="help">Данные хранятся только в этом браузере. Не добавляйте персональные сведения клиентов.</p><button type="button" class="ghost danger" id="resetDemo">Очистить демонстрационные данные</button></div>`;
 }
-function render(){document.body.dataset.industry=industries[state.business.industry]?state.business.industry:'other';nav();$('salonName').textContent=state.business.name;const views={home,tasks,offer,creative,launch,losses,result:results,business};$('view').innerHTML=(views[page]||home)();$('settingsOpen').onclick=()=>route('business');wire();}
+function render(){document.body.dataset.industry=industries[state.business.industry]?state.business.industry:'other';nav();$('salonName').textContent=state.business.name;const views={home,tasks,studio,offer,creative,launch,losses,result:results,business};$('view').innerHTML=(views[page]||home)();$('settingsOpen').onclick=()=>route('business');wire();}
 function wire(){document.querySelectorAll('[data-go]').forEach(b=>b.addEventListener('click',()=>route(b.dataset.go,b.dataset.id)));document.querySelectorAll('[data-open]').forEach(b=>b.addEventListener('click',()=>{const c=state.campaigns.find(x=>x.id===b.dataset.open);route(c.status==='draft'?'offer':c.status==='chosen'?'creative':'launch',c.id)}));document.querySelectorAll('[data-example]').forEach(b=>b.onclick=()=>addShort(b.dataset.example));if(page==='home'){
  document.querySelectorAll('[data-compose]').forEach(b=>b.onclick=()=>showComposer(''));
  document.querySelectorAll('[data-quick]').forEach(b=>b.onclick=()=>showComposer(b.dataset.quick));
@@ -655,7 +691,22 @@ function wire(){document.querySelectorAll('[data-go]').forEach(b=>b.addEventList
  if($('closeComposer'))$('closeComposer').onclick=()=>{composerOpen=false;composerDraft='';render()};
  if($('createButton'))$('createButton').onclick=addTask;
  if($('voiceButton'))$('voiceButton').onclick=startVoice;
-}if(page==='offer'){document.querySelectorAll('[data-select]').forEach(o=>{const choose=()=>{const c=byId();c.selected=Number(o.dataset.select);c.title=c.offers[c.selected].headline||c.offers[c.selected].title;c.copy=c.offers[c.selected].copy;c.assets=null;save();render()};o.onclick=choose;o.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}});$('selectOffer').onclick=()=>{let c=byId();if(c.status==='draft')c.status='chosen';save();route('creative',c.id)}}if(page==='creative'){const c=byId(),title=$('offerTitle'),copy=$('offerCopy');
+}if(page==='tasks'){
+ document.querySelectorAll('[data-idea]').forEach(el=>el.onclick=()=>showComposer(ideaLibrary[Number(el.dataset.idea)].prompt));
+}
+if(page==='studio'){
+ const draft=state.studioDraft;
+ const title=$('studioTitle'),copy=$('studioCopy');
+ const sync=()=>{draft.title=title.value;draft.copy=copy.value;save();$('studioHeadline').textContent=draft.title;};
+ title.oninput=sync;copy.oninput=sync;
+ document.querySelectorAll('[data-studio-theme]').forEach(b=>b.onclick=()=>{draft.posterTheme=b.dataset.studioTheme;save();$('studioPreview').className='preview theme-'+draft.posterTheme;document.querySelectorAll('[data-studio-theme]').forEach(x=>x.classList.toggle('active',x===b))});
+ const samples=[['Новый продукт','Уточните наличие, цену и условия — мы расскажем подробнее.'],['У вас есть вопрос?','Напишите нам — уточним детали и поможем разобраться.'],['Посмотрите ближе','Покажем товар или рабочий процесс и ответим на ваши вопросы.']];
+ document.querySelectorAll('[data-studio-preset]').forEach(b=>b.onclick=()=>{const p=samples[Number(b.dataset.studioPreset)];title.value=p[0];copy.value=p[1];sync()});
+ $('studioCopy').onclick=()=>copyText(title.value+'\n\n'+copy.value);
+ $('studioDownload').onclick=()=>{if(!draft.title.trim()){toast('Введите заголовок');return}storyPNG(draft)};
+ document.querySelectorAll('[data-studio-campaign]').forEach(b=>b.onclick=()=>route('creative',b.dataset.studioCampaign));
+}
+if(page==='offer'){document.querySelectorAll('[data-select]').forEach(o=>{const choose=()=>{const c=byId();c.selected=Number(o.dataset.select);c.title=c.offers[c.selected].headline||c.offers[c.selected].title;c.copy=c.offers[c.selected].copy;c.assets=null;save();render()};o.onclick=choose;o.onkeydown=e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();choose()}}});$('selectOffer').onclick=()=>{let c=byId();if(c.status==='draft')c.status='chosen';save();route('creative',c.id)}}if(page==='creative'){const c=byId(),title=$('offerTitle'),copy=$('offerCopy');
  document.querySelectorAll('[data-asset]').forEach(b=>b.onclick=()=>{
    assetMode=b.dataset.asset;
    const a=getPack(c);
