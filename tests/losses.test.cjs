@@ -20,7 +20,7 @@ const click=x=>{const el=d.querySelector(x);assert.ok(el,'Missing '+x);el.click(
 const set=(x,v)=>{const e=d.querySelector(x);assert.ok(e,'Missing '+x);e.value=v;e.dispatchEvent(new app.window.Event('change',{bubbles:true}))};
 (async()=>{
  click('#bottomnav [data-route="losses"]');
- assert.match(d.querySelector('h1').textContent,/Где теряются/);
+ assert.match(d.querySelector('h1').textContent,/Клиенты и/);
  assert.equal(d.querySelector('#riskCount').textContent,'0');
  assert.equal(d.querySelector('#openCount').textContent,'0');
  assert.match(d.querySelector('.loss-legacy').textContent,/1 старых записей/);
@@ -28,6 +28,13 @@ const set=(x,v)=>{const e=d.querySelector(x);assert.ok(e,'Missing '+x);e.value=v
  // Owner enters an anonymized lead received 36 hours earlier.
  const past=new Date(Date.now()-36*3600000);
  const inputDate=new Date(past.getTime()-past.getTimezoneOffset()*60000).toISOString().slice(0,16);
+ set('#clientName','Тестовый Клиент');
+ set('#clientPhone','+7 000 111-22-33');
+ set('#clientEmail','test@example.com');
+ set('#clientSocial','@demo');
+ set('#clientInterest','Светильник');
+ set('#clientComment','Вымышленный запрос для проверки интерфейса');
+ set('#clientContactMethod','telegram');
  set('#newLeadSource','instagram');
  set('#newLeadEstimate','3500');
  set('#newLeadDate',inputDate);
@@ -41,6 +48,11 @@ const set=(x,v)=>{const e=d.querySelector(x);assert.ok(e,'Missing '+x);e.value=v
  assert.equal(state.leads[0].tracked,true);
  assert.equal(state.leads[0].source,'instagram');
  assert.equal(state.leads[0].estimate,3500);
+ assert.doesNotMatch(app.window.localStorage.getItem('rg-clean-v2'),/Тестовый Клиент|111-22-33|test@example.com|@demo|Светильник|Вымышленный запрос/,'No personal contact stored in browser persistence');
+ assert.match(d.querySelector('.loss-profile-name').textContent,/Тестовый Клиент/);
+ assert.match(d.querySelector('.client-profile').textContent,/test@example.com/);
+ assert.match(d.querySelector('.client-profile').textContent,/@demo/);
+
  set('#riskHours','48');
  assert.equal(d.querySelector('#riskCount').textContent,'0','Adjusting SLA updates risk');
  set('#riskHours','12');
