@@ -566,7 +566,7 @@ function studio(){
  <button type="button" data-studio-preset="0">Новый продукт</button>
  <button type="button" data-studio-preset="1">Вопрос аудитории</button>
  <button type="button" data-studio-preset="2">Обзор</button></div></div>
- <div class="actions"><button type="button" class="primary wide" id="studioDownload">${svg('download')} Скачать PNG 1080 × 1920</button><button type="button" class="secondary wide" id="studioCopy">${svg('copy')} Скопировать текст</button></div>
+ <div class="actions"><button type="button" class="primary wide" id="studioDownload">${svg('download')} Скачать PNG 1080 × 1920</button><button type="button" class="secondary wide" id="studioCopyButton">${svg('copy')} Скопировать текст</button></div>
  <div class="hint">Постер создаётся локально из текста и оформления. Это не генерация изображения нейросетью.</div>
  </div>
  <div class="creative-preview"><div class="preview-label">Предпросмотр</div><div class="preview theme-${theme}" id="studioPreview"><div class="topline">${esc(state.business.name)}</div><div class="hero" id="studioHeadline">${esc(draft.title)}</div><div class="bottomline">Уточните детали в сообщениях</div></div>
@@ -604,7 +604,8 @@ function creative(){
 function launch(){const c=byId();if(!c)return tasks();const approved=c.status==='approved'||c.status==='published';return `<button class="back" data-go="tasks">‹ Назад к задачам</button><div class="step">Шаг 3 из 3</div><h1 class="h1">${c.status==='published'?'Кампания запущена':'Почти готово'}</h1><p class="lead">${approved?'Теперь можно размещать материалы и отмечать реальные продажи.':'Сначала утвердите предложение.'}</p><div class="section card"><span class="status ${approved?'good':''}">${c.status==='published'?'Размещено':approved?'Утверждено':'Требует утверждения'}</span><h2 style="font-size:25px;letter-spacing:-.03em;line-height:1.2;margin:16px 0">${esc(c.title)}</h2><p style="color:#6b7078;margin:0">${esc(c.copy)}</p><hr class="line"><p class="small">Размещайте предложение только в разрешённых каналах бизнеса. После публикации отметьте это здесь.</p>${c.status==='approved'?`<button id="markPublished" class="primary wide">Отметить публикацию</button>`:''}${c.status!=='published'?`<button class="secondary wide" style="margin-top:10px" data-go="creative" data-id="${esc(c.id)}">Изменить материалы</button>`:''}</div>${c.status==='published'?`<div class="section"><h3>Результат кампании</h3><div class="card"><div class="metricrow"><span>Обращений, отмеченных вручную</span><strong>${state.leads.filter(x=>x.campaignId===c.id).length}</strong></div><button type="button" id="addLead" class="secondary wide" style="margin-bottom:18px">${svg('plus')} Добавить обращение</button><label class="label" for="paidAmount">Полученная оплата, ₽</label><input id="paidAmount" type="number" min="1" max="100000000" inputmode="numeric" placeholder="Например, 4500"><div class="space"></div><button class="primary wide" id="addPayment">${svg('plus')} Добавить оплату</button></div><div class="hint">Добавляйте только подтверждённые обращения и реальные оплаты. По умолчанию связь с кампанией не доказывает причинный эффект.</div></div>`:''}`}
 
 const leadSources={instagram:'Instagram',telegram:'Telegram',site:'Сайт',phone:'Звонок',walkin:'Лично',other:'Другое'};
-const leadStatuses={new:'Не обработано',working:'В работе',won:'Закрыто успешно',lost:'Закрыто без покупки'};
+const leadStatuses={new:'Не обработано',working:'В работе',won:'Сделка завершена',lost:'Закрыто без покупки'};
+const sessionClients=new Map(); // Personal details intentionally never go to localStorage.
 const isTrackedLead=l=>l?.tracked===true&&leadStatuses[l.status]&&Number.isFinite(Date.parse(l.createdAt));
 const isOpenLead=l=>l.status==='new'||l.status==='working';
 const leadHours=l=>Math.max(0,(Date.now()-Date.parse(l.lastTouchAt||l.createdAt))/3600000);
@@ -620,29 +621,56 @@ function losses(){
  const ordered=[...tracked].sort((a,b)=>Number(isRiskLead(b))-Number(isRiskLead(a))||Number(isOpenLead(b))-Number(isOpenLead(a))||Date.parse(b.createdAt)-Date.parse(a.createdAt));
  return `<section class="losses-page">
  <div class="losses-eyebrow">${svg('alert')} КОНТРОЛЬ ОБРАЩЕНИЙ</div>
- <h1 class="losses-title">Где теряются<br><em>деньги?</em></h1>
- <p class="lead">Не пропускайте обращения. Отмечайте следующий шаг и возвращайтесь к тем, что давно без ответа.</p>
+ <h1 class="losses-title">Клиенты и<br><em>возможности.</em></h1>
+ <p class="lead">Каждое обращение — возможность. Ведите историю действий и держите следующие шаги под контролем.</p>
  <div class="losses-summary">
-  <div class="loss-stat loss-hot"><span>Нужно проверить</span><strong id="riskCount">${attention.length}</strong><small>Без действий ≥ ${state.leadSlaHours} ч.</small></div>
+  <div class="loss-stat loss-hot"><span>Требуют внимания</span><strong id="riskCount">${attention.length}</strong><small>Без действий ≥ ${state.leadSlaHours} ч.</small></div>
   <div class="loss-stat"><span>Открытых</span><strong id="openCount">${open.length}</strong><small>Вручную внесённые</small></div>
  </div>
- <div class="potential-box"><div><span>Под риском · условная сумма</span><strong id="riskValue">${fmt(potential)}</strong></div><div class="potential-note">Сумма оценок по ${attention.length} необработанным вовремя обращениям${unknown?' · '+unknown+' без оценки':''}. Это не доказанные потери или ожидаемая выручка.</div></div>
+ <div class="potential-box"><div><span>Возможности · условная сумма</span><strong id="riskValue">${fmt(potential)}</strong></div><div class="potential-note">Сумма оценок по ${attention.length} обращениям, требующим внимания${unknown?' · '+unknown+' без оценки':''}. Это не доказанные потери или ожидаемая выручка.</div></div>
  <div class="risk-settings"><label for="riskHours">Проверять, если не было действий</label><select id="riskHours"><option value="4" ${state.leadSlaHours===4?'selected':''}>4 часа</option><option value="12" ${state.leadSlaHours===12?'selected':''}>12 часов</option><option value="24" ${state.leadSlaHours===24?'selected':''}>24 часа</option><option value="48" ${state.leadSlaHours===48?'selected':''}>48 часов</option></select></div>
- <section class="loss-add"><div class="loss-section-head"><h2>Новое обращение</h2><span>Без ФИО и телефонов</span></div><form id="leadForm">
+ <section class="loss-add"><div class="loss-section-head"><h2>Новый клиент</h2><span>Тестовые данные</span></div><form id="leadForm">
+ <div class="client-demo-notice"><strong>Демонстрация карточки клиента</strong><span>Контактные данные и заметки не записываются в память устройства и исчезают после перезагрузки страницы. Используйте только вымышленные сведения. Для реальных клиентов потребуется защищённая база.</span></div>
+ <div class="loss-field-row">
+ <div class="field"><label class="label" for="clientName">Имя клиента</label><input id="clientName" type="text" maxlength="90" autocomplete="off" placeholder="Например: Клиент А"></div>
+ <div class="field"><label class="label" for="clientPhone">Телефон</label><input id="clientPhone" type="tel" maxlength="32" autocomplete="off" placeholder="+7 (000) 000-00-00"></div>
+ </div>
+ <div class="loss-field-row">
+ <div class="field"><label class="label" for="clientEmail">Электронная почта</label><input id="clientEmail" type="email" maxlength="120" autocomplete="off" placeholder="client@example.com"></div>
+ <div class="field"><label class="label" for="clientSocial">Профиль или ник</label><input id="clientSocial" type="text" maxlength="100" autocomplete="off" placeholder="@example"></div>
+ </div>
+ <div class="field"><label class="label" for="clientInterest">Товар или услуга, которые интересуют</label><input id="clientInterest" type="text" maxlength="160" autocomplete="off" placeholder="Например: настольный светильник"></div>
+ <div class="field"><label class="label" for="clientComment">Запрос и история общения</label><textarea id="clientComment" maxlength="800" rows="3" autocomplete="off" placeholder="Только вымышленные сведения для демонстрации"></textarea></div>
+ <div class="field"><label class="label" for="clientContactMethod">Удобный способ связи</label><select id="clientContactMethod"><option value="unknown">Неизвестно</option><option value="instagram">Instagram Direct</option><option value="telegram">Telegram</option><option value="phone">Телефон</option><option value="email">Email</option></select></div>
+ <label class="client-consent"><input type="checkbox" id="clientMarketingConsent"><span>Есть подтверждённое разрешение на рекламные сообщения <small>Отметка владельца — не доказательство согласия. В этой версии рассылок нет.</small></span></label>
  <div class="loss-field-row"><div class="field"><label class="label" for="newLeadSource">Откуда пришло</label><select id="newLeadSource">${Object.entries(leadSources).map(([k,v])=>`<option value="${k}">${v}</option>`).join('')}</select></div><div class="field"><label class="label" for="newLeadEstimate">Возможный чек, ₽</label><input id="newLeadEstimate" type="number" inputmode="decimal" step="1" min="0" max="100000000" placeholder="Неизвестно" value="${safeMoney(state.business.price)||''}"></div></div>
  <div class="field"><label class="label" for="newLeadDate">Когда пришло обращение</label><input id="newLeadDate" type="datetime-local" required value="${localDateTime()}" max="${localDateTime()}"></div>
  <button type="submit" class="primary wide">${svg('plus')} Добавить обращение</button></form></section>
  <section class="loss-list"><div class="loss-section-head"><h2>Ваши обращения</h2><span>${tracked.length} учтено</span></div>
  ${ordered.length?ordered.map(l=>{const urgent=isRiskLead(l),hrs=leadHours(l),closed=!isOpenLead(l);
  return `<article class="loss-lead ${urgent?'is-urgent':''}" data-lead-id="${esc(l.id)}">
+  <div class="loss-profile-name">${esc(sessionClients.get(l.id)?.name||'Клиент · '+l.id.slice(-4))}</div>
   <div class="loss-lead-top"><span class="loss-source">${esc(leadSources[l.source]||'Другое')}</span><span class="loss-status ${urgent?'urgent':''}">${urgent?'Требует внимания':leadStatuses[l.status]}</span></div>
   <div class="loss-lead-line"><strong>${safeMoney(l.estimate)?fmt(l.estimate):'Чек не указан'}</strong><span>${closed?'Завершено':esc(leadAge(hrs))+' без действий'}</span></div>
-  <div class="loss-lead-sub">${esc(new Date(l.createdAt).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))} · ${urgent?'Нет отметки о действии дольше заданного срока':closed?'Обращение закрыто':'Ожидает следующего действия'}</div>
+  <details class="client-profile" data-profile-id="${esc(l.id)}"><summary>Карточка клиента <span>Подробнее</span></summary>
+ <div class="client-profile-grid">
+ <div><span>Имя</span><strong>${esc(sessionClients.get(l.id)?.name||'Не указано · сведения сессии недоступны')}</strong></div>
+ <div><span>Телефон</span><strong>${esc(sessionClients.get(l.id)?.phone||'Не указан')}</strong></div>
+ <div><span>Email</span><strong>${esc(sessionClients.get(l.id)?.email||'Не указан')}</strong></div>
+ <div><span>Профиль</span><strong>${esc(sessionClients.get(l.id)?.social||'Не указан')}</strong></div>
+ <div><span>Интерес</span><strong>${esc(sessionClients.get(l.id)?.interest||'Не указан')}</strong></div>
+ <div><span>Удобная связь</span><strong>${esc(({unknown:'Неизвестно',instagram:'Instagram',telegram:'Telegram',phone:'Звонок',email:'Email'})[sessionClients.get(l.id)?.contactMethod]||'Неизвестно')}</strong></div>
+ </div>
+ ${sessionClients.get(l.id)?.comment?`<p class="client-comment">${esc(sessionClients.get(l.id).comment)}</p>`:''}
+ <div class="client-consent-status">Рекламное согласие: ${sessionClients.get(l.id)?.marketingConsent?'владелец отметил наличие, не проверено':'не подтверждено'}</div>
+ <div class="client-pd-note">Данные клиента видны только до перезагрузки текущей страницы. Они не сохраняются в журнале и не передаются в ИИ.</div>
+ </details>
+ <div class="loss-lead-sub">${esc(new Date(l.createdAt).toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}))} · ${urgent?'Нет отметки о действии дольше заданного срока':closed?'Обращение закрыто':'Ожидает следующего действия'}</div>
   ${!closed?`<div class="loss-buttons"><button type="button" data-lead-action="working" data-id="${esc(l.id)}">Ответили</button><button type="button" data-lead-action="won" data-id="${esc(l.id)}">Продано</button><button type="button" data-lead-action="lost" data-id="${esc(l.id)}">Без покупки</button></div>`:`<div class="loss-closed">${l.status==='won'?'Закрыто как продажа (без автоматического учёта денег)':'Закрыто без покупки'} <button type="button" class="loss-reopen" data-lead-action="working" data-id="${esc(l.id)}">Вернуть в работу</button></div>`}
  </article>`}).join(''):`<div class="loss-empty">${svg('check')}<strong>Пока нет обращений</strong><span>Добавьте первое — и приложение поможет не забыть его обработать.</span></div>`}
  ${legacyCount?`<p class="loss-legacy">Ещё ${legacyCount} старых записей учитываются в прежней статистике. Для них неизвестен статус обработки, поэтому мы не считаем их просроченными.</p>`:''}
  </section>
- <div class="loss-disclaimer">Это локальный журнал, а не подключение к Instagram, мессенджерам или CRM. Приоритет определяется временем последнего отмеченного действия и выбранным сроком. Данные не проверяются автоматически. Для реальных клиентов не вводите персональные данные.</div>
+ <div class="loss-disclaimer">Это демонстрационный журнал, не подключённый к Instagram, Telegram или CRM. Контакты и заметки видны только в текущей сессии и не сохраняются. Для настоящей клиентской базы потребуется защищённый сервер с авторизацией.</div>
  </section>`;
 }
 
@@ -702,7 +730,7 @@ if(page==='studio'){
  document.querySelectorAll('[data-studio-theme]').forEach(b=>b.onclick=()=>{draft.posterTheme=b.dataset.studioTheme;save();$('studioPreview').className='preview theme-'+draft.posterTheme;document.querySelectorAll('[data-studio-theme]').forEach(x=>x.classList.toggle('active',x===b))});
  const samples=[['Новый продукт','Уточните наличие, цену и условия — мы расскажем подробнее.'],['У вас есть вопрос?','Напишите нам — уточним детали и поможем разобраться.'],['Посмотрите ближе','Покажем товар или рабочий процесс и ответим на ваши вопросы.']];
  document.querySelectorAll('[data-studio-preset]').forEach(b=>b.onclick=()=>{const p=samples[Number(b.dataset.studioPreset)];title.value=p[0];copy.value=p[1];sync()});
- $('studioCopy').onclick=()=>copyText(title.value+'\n\n'+copy.value);
+ $('studioCopyButton').onclick=()=>copyText(title.value+'\n\n'+copy.value);
  $('studioDownload').onclick=()=>{if(!draft.title.trim()){toast('Введите заголовок');return}storyPNG(draft)};
  document.querySelectorAll('[data-studio-campaign]').forEach(b=>b.onclick=()=>route('creative',b.dataset.studioCampaign));
 }
@@ -728,9 +756,13 @@ document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{c.posterThem
   if(!Number.isFinite(t)||t>Date.now()+60000||t<Date.now()-365*86400000){toast('Укажите дату не старше года и не в будущем');return}
   const estimate=raw===''?0:Number(raw);
   if(!Number.isFinite(estimate)||estimate<0||estimate>100000000){toast('Проверьте возможный чек');return}
+  const client={name:$('clientName').value.trim(),phone:$('clientPhone').value.trim(),email:$('clientEmail').value.trim(),social:$('clientSocial').value.trim(),interest:$('clientInterest').value.trim(),comment:$('clientComment').value.trim(),contactMethod:$('clientContactMethod').value,marketingConsent:$('clientMarketingConsent').checked};
+  if(client.name.length<2){toast('Введите вымышленное имя для демонстрации');$('clientName').focus();return}
+  if(client.email&&!$('clientEmail').checkValidity()){toast('Неверный формат email');return}
   const id='lead'+Date.now()+Math.random().toString(36).slice(2,8);
   state.leads.unshift({id,tracked:true,source:leadSources[src]?src:'other',estimate,createdAt:new Date(t).toISOString(),lastTouchAt:new Date(t).toISOString(),status:'new'});
-  save();toast('Обращение добавлено');render();
+  sessionClients.set(id,client); // No names, phone numbers, emails, handles or notes in localStorage.
+  save();toast('Карточка добавлена · контакты доступны только до перезагрузки');render();
  };
  document.querySelectorAll('[data-lead-action]').forEach(btn=>btn.onclick=()=>{
   const l=state.leads.find(x=>x.id===btn.dataset.id&&isTrackedLead(x));if(!l||(!isOpenLead(l)&&btn.dataset.leadAction!=='working'))return;
