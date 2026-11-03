@@ -17,6 +17,25 @@ const set=(selector,value)=>{const el=d.querySelector(selector);assert.ok(el,'Mi
  assert.equal(d.querySelectorAll('.quick-action').length,4);
  assert.equal(d.querySelectorAll('.inspo-card').length,3);
  assert.equal(d.querySelectorAll('#bottomnav [data-route]').length,5);
+ click('#bottomnav [data-route="tasks"]');
+ assert.equal(d.querySelectorAll('.idea-tile').length,6,'Ideas tab has an independent scenario library');
+ assert.match(d.querySelector('h1').textContent,/Идеи, которые/);
+ click('#bottomnav [data-route="studio"]');
+ assert.ok(d.querySelector('#studioTitle'),'Studio has its own standalone editing screen');
+ assert.equal(d.querySelectorAll('[data-studio-theme]').length,3,'Standalone Studio offers three themes');
+ assert.ok(d.querySelector('#studioCopyButton'),'Studio has a real copy button');
+ set('#studioTitle','Тестовый независимый креатив');
+ click('[data-studio-theme="ink"]');
+ assert.equal(d.querySelector('#studioHeadline').textContent,'Тестовый независимый креатив');
+ assert.ok(d.querySelector('#studioPreview').classList.contains('theme-ink'));
+ click('#bottomnav [data-route="home"]');
+ click('#bottomnav [data-route="studio"]');
+ assert.equal(d.querySelector('#studioTitle').value,'Тестовый независимый креатив','Draft survives tab switching');
+ click('#bottomnav [data-route="tasks"]');
+ click('[data-idea="1"]');
+ assert.ok(d.querySelector('#taskText'),'Idea scenario opens a prefilled task');
+ assert.match(d.querySelector('#taskText').value,/новых покупателей/);
+
  click('#settingsOpen');
  assert.equal(d.querySelectorAll('#bizIndustry option').length,7);
  set('#bizIndustry','food');
